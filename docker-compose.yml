@@ -29,7 +29,7 @@ services:
       - THRESHOLD=100
       - LATITUDE=${LATITUDE}
       - LONGTITUDE=${LONGTITUDE}
-      - SUBSCRIBE=owntracks/*/*
+      - SUBSCRIBE=owntracks/#
       - USER=${USER}
       - PASS=${PASS}
       - MQTT=${MQTT}
