@@ -9,7 +9,7 @@ services:
       labels:
         - com.df.notify=true
         - com.df.distribute=true
-        - com.df.serviceDomain=rules_engine.p.cns.me
+        - com.df.serviceDomain=rules-engine.p.cns.me
         - com.df.port=3002
         - com.df.httpsOnly=true
         - com.df.servicePath=/
