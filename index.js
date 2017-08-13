@@ -18,7 +18,7 @@ const home = {latitude: LATITUDE, longitude: LONGTITUDE}
 
 client.on('connect', () => client.subscribe(SUBSCRIBE))
 
-var response = {}
+var response = []
 
 client.on('message', function (topic, message) {
   let payload = JSON.parse(message.toString())
