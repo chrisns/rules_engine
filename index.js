@@ -7,7 +7,7 @@ app.use(cors())
 const {THRESHOLD, LATITUDE, LONGTITUDE, SUBSCRIBE, USER, PASS, MQTT} = process.env
 
 const mqtt = require('mqtt')
-const geolib = require("geolib")
+// const geolib = require("geolib")
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
@@ -21,10 +21,10 @@ client.on('connect', () => client.subscribe(SUBSCRIBE))
 var response = []
 
 client.on('message', function (topic, message) {
-  let payload = JSON.parse(message.toString())
-
+  // let payload = JSON.parse(message.toString())
+  console.log(message)
   let device = topic.split("/")[2]
-  response.push(payload)
+  response.push(message.toString())
 
 })
 
