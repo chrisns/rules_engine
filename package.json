@@ -14,6 +14,8 @@
     "express": "^4.15.3",
     "geolib": "^2.0.22",
     "mqtt": "^2.8.2",
-    "node-prowl": "^0.1.7"
+    "node-prowl": "^0.1.7",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1"
   }
 }

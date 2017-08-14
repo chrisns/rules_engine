@@ -27,6 +27,8 @@ services:
     environment:
       - PEER_DISCOVERY_NAME=rules_engine
       - PROWL_KEY=${PROWL_KEY}
+      - VISONIC_URL=${VISONIC_URL}
+      - VISONIC_SECRET=${VISONIC_SECRET}
       - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}
       - PASS=${PASS}

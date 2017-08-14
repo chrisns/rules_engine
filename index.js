@@ -2,10 +2,11 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const Prowl = require('node-prowl')
+const rp = require('request-promise');
 
 app.use(cors())
 
-const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY} = process.env
+const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY, VISONIC_URL, VISONIC_SECRET} = process.env
 
 const mqtt = require('mqtt')
 const client = mqtt.connect(MQTT, {
@@ -32,10 +33,20 @@ client.on('message', function (topic, message) {
       }, (err, remaining) => {
         if (err) console.error(err)
       })
+      if (payload.event === "enter") {
+        rp({
+          uri: `${VISONIC_URL}/disarm`,
+          method: "POST",
+          json: true,
+          body: {
+            secret: VISONIC_SECRET,
+            partition: "P1"
+          }
+        }).catch(error => console.log(error))
+      }
     }
   }
 
-  console.log(message)
   response.push(message.toString())
 
 })
