@@ -6,7 +6,7 @@ const rp = require('request-promise');
 
 app.use(cors())
 
-const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY, VISONIC_URL, VISONIC_SECRET} = process.env
+const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY, VISONIC_URL, VISONIC_SECRET, DOOR_LOCK_URL} = process.env
 
 const mqtt = require('mqtt')
 const client = mqtt.connect(MQTT, {
@@ -42,7 +42,10 @@ client.on('message', function (topic, message) {
             secret: VISONIC_SECRET,
             partition: "P1"
           }
-        }).catch(error => console.log(error))
+        })
+        rp({
+          uri: DOOR_LOCK_URL
+        })
       }
     }
   }

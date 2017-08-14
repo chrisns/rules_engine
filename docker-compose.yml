@@ -29,6 +29,7 @@ services:
       - PROWL_KEY=${PROWL_KEY}
       - VISONIC_URL=${VISONIC_URL}
       - VISONIC_SECRET=${VISONIC_SECRET}
+      - DOOR_LOCK_URL=${DOOR_LOCK_URL}
       - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}
       - PASS=${PASS}
