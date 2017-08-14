@@ -26,10 +26,8 @@ services:
     image: pinked/rules_engine
     environment:
       - PEER_DISCOVERY_NAME=rules_engine
-      - THRESHOLD=100
-      - LATITUDE=${LATITUDE}
-      - LONGTITUDE=${LONGTITUDE}
-      - SUBSCRIBE=owntracks/#
+      - PROWL_KEY=${PROWL_KEY}
+      - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}
       - PASS=${PASS}
       - MQTT=${MQTT}
