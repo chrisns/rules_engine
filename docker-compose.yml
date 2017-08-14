@@ -23,7 +23,7 @@ services:
         failure_action: pause
         monitor: 60s
         max_failure_ratio: 0.3
-    image: pinked/locator
+    image: pinked/rules_engine
     environment:
       - PEER_DISCOVERY_NAME=rules_engine
       - THRESHOLD=100
