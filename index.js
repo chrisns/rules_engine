@@ -14,7 +14,7 @@ const client = mqtt.connect(MQTT, {
 
 })
 
-const prowl = Promise.promisifyAll(new Prowl(PROWL_KEY));
+const prowl = new Prowl(PROWL_KEY);
 
 client.on('connect', () => client.subscribe(SUBSCRIBE))
 
