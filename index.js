@@ -1,29 +1,41 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const Prowl = require('node-prowl')
 
 app.use(cors())
 
-const {THRESHOLD, LATITUDE, LONGTITUDE, SUBSCRIBE, USER, PASS, MQTT} = process.env
+const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY} = process.env
 
 const mqtt = require('mqtt')
-// const geolib = require("geolib")
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
 
 })
 
-const home = {latitude: LATITUDE, longitude: LONGTITUDE}
+const prowl = Promise.promisifyAll(new Prowl(PROWL_KEY));
 
 client.on('connect', () => client.subscribe(SUBSCRIBE))
 
 var response = []
 
 client.on('message', function (topic, message) {
-  // let payload = JSON.parse(message.toString())
+  const device = topic.split("/")[2]
+  const payload = JSON.parse(message.toString())
+  console.log(topic, payload)
+
+  if (payload._type === "transition") {
+    if (payload.desc === "Home") {
+      prowl.push(`${device} just ${payload.event}`, 'Pinked', {
+        priority: 2,
+      }, (err, remaining) => {
+        if (err) console.error(err)
+      })
+    }
+  }
+
   console.log(message)
-  let device = topic.split("/")[2]
   response.push(message.toString())
 
 })
