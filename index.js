@@ -30,7 +30,7 @@ client.on('connect', () => client.subscribe([
     "alarm/new-state",
     "presence/home/enter",
     "presence/home/leave",
-    "/rules/presence/home/+"
+    "presence/home/+"
   ]
 ))
 
