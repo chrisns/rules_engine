@@ -1,19 +1,9 @@
 version: "3"
 services:
   rules_engine:
-    networks:
-      - proxy
     read_only: true
     deploy:
       replicas: 1
-      labels:
-        - com.df.notify=true
-        - com.df.distribute=true
-        - com.df.serviceDomain=rules-engine.p.cns.me
-        - com.df.port=3002
-        - com.df.httpsOnly=true
-        - com.df.servicePath=/
-        - com.df.xForwardedProto=true
       restart_policy:
         condition: any
         delay: 5s
@@ -25,8 +15,8 @@ services:
         max_failure_ratio: 0.3
     image: pinked/rules_engine
     environment:
-      - PROWL_KEY=${PROWL_KEY}
-      - DOOR_LOCK_URL=${DOOR_LOCK_URL}
+      - HANNAH_PROWL_KEY=${HANNAH_PROWL_KEY}
+      - CHRIS_PROWL_KEY=${CHRIS_PROWL_KEY}
       - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}
       - PASS=${PASS}
