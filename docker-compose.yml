@@ -25,10 +25,7 @@ services:
         max_failure_ratio: 0.3
     image: pinked/rules_engine
     environment:
-      - PEER_DISCOVERY_NAME=rules_engine
       - PROWL_KEY=${PROWL_KEY}
-      - VISONIC_URL=${VISONIC_URL}
-      - VISONIC_SECRET=${VISONIC_SECRET}
       - DOOR_LOCK_URL=${DOOR_LOCK_URL}
       - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}

@@ -2,11 +2,10 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const Prowl = require('node-prowl')
-const rp = require('request-promise');
 
 app.use(cors())
 
-const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY, VISONIC_URL, VISONIC_SECRET, DOOR_LOCK_URL} = process.env
+const {SUBSCRIBE, USER, PASS, MQTT, PROWL_KEY} = process.env
 
 const mqtt = require('mqtt')
 const client = mqtt.connect(MQTT, {
@@ -34,18 +33,12 @@ client.on('message', function (topic, message) {
         if (err) console.error(err)
       })
       if (payload.event === "enter") {
-        rp({
-          uri: `${VISONIC_URL}/disarm`,
-          method: "POST",
-          json: true,
-          body: {
-            secret: VISONIC_SECRET,
-            partition: "P1"
-          }
-        })
-        rp({
-          uri: DOOR_LOCK_URL
-        })
+        client.publish('alarm/set-state', 'disarm', {qos: 0})
+        client.publish('domoticz/in', JSON.stringify({
+          command: "switchlight",
+          idx: 3,
+          switchcmd: "Off"
+        }), {qos: 0})
       }
     }
   }
