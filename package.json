@@ -10,9 +10,10 @@
   "author": "Chris Nesbitt-Smith",
   "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.3",
     "express": "^4.15.3",
+    "lodash": "^4.17.4",
     "mqtt": "^2.8.2",
+    "mqtt-wildcard": "^3.0.9",
     "node-prowl": "^0.1.7"
   }
 }
