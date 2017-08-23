@@ -91,7 +91,7 @@ client.on('message', function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "zwave/switch/155" && message.nvalue === 0) {
+  if (topic === "zwave/switch/155" && message.nvalue === 1) {
     console.log("door bell!")
     domoticz_helper(79, "Toggle")
     domoticz_helper(79, "Toggle")
