@@ -88,8 +88,7 @@ client.on('message', function (topic, message) {
   }
 
   if ((t = mqttWildcard(topic, 'domoticz/out')) && t !== null) {
-    console.log(`${message.idx} ${message.name} is low on battery`)
-    client.publish(`zwave/${message.stype}/${message.idx}/`, JSON.stringify(message), {retain: true})
+    client.publish(`zwave/${message.stype}/${message.idx}`, JSON.stringify(message), {retain: true})
   }
 
 })
