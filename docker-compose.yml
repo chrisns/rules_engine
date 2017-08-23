@@ -3,14 +3,13 @@ services:
   rules_engine:
     read_only: true
     deploy:
-      replicas: 1
+      replicas: 2
       restart_policy:
         condition: any
-        delay: 5s
       update_config:
         parallelism: 1
         delay: 10s
-        failure_action: pause
+        failure_action: rollback
         monitor: 60s
         max_failure_ratio: 0.3
     image: pinked/rules_engine:${DRONE_BUILD_NUMBER}

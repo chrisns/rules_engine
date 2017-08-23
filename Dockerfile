@@ -6,4 +6,6 @@ COPY package.json .
 RUN npm install -s --prod
 COPY . .
 
-CMD npm start
+ENV NODE_ENV=production
+
+CMD node index.js

@@ -23,14 +23,16 @@ let prowl = {
   }
 }
 
-client.on('connect', () => client.subscribe([
+const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
+
+client.on('connect', () => client.subscribe(_.map([
     "owntracks/+/+/event",
     "domoticz/out",
     "alarm/state",
     "alarm/new-state",
     "presence/home/+",
     "zwave/switch/+"
-  ]
+  ], topic => shared_prefix + topic)
 ))
 
 let current_alarm_state
@@ -115,5 +117,17 @@ const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink
 
 const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
 
-//@TODO end the client cleanly when getting a kill
+function clean_exit() {
+  console.log("Closing connection (clean)")
+  client.end(false, () => process.exit(0))
+}
 
+function unclean_exit() {
+  console.log("Closing connection (unclean)")
+  client.end(false, () => process.exit(1))
+}
+
+process.stdin.resume()
+process.on('exit', clean_exit);
+process.on('SIGINT', clean_exit);
+process.on('unclean_exit', clean_exit);
