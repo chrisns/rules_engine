@@ -83,8 +83,13 @@ client.on('message', function (topic, message) {
 
   // zwave low battery alert
   if ((t = mqttWildcard(topic, 'domoticz/out')) && t !== null && message.Battery && message.Battery < 15) {
-    console.log(`${message.idx} is low on battery`)
-    prowl_helper("Chris", `zwave device ${message.idx} is low on battery`)
+    console.log(`${message.idx} ${message.name} is low on battery`)
+    prowl_helper("Chris", `zwave device ${message.idx} ${message.name} is low on battery`)
+  }
+
+  if ((t = mqttWildcard(topic, 'domoticz/out')) && t !== null) {
+    console.log(`${message.idx} ${message.name} is low on battery`)
+    client.publish(`zwave/${message.stype}/${message.idx}/`, JSON.stringify(message), {retain: true})
   }
 
 })
