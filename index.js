@@ -89,6 +89,14 @@ client.on('message', function (topic, message) {
     client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
   }
 
+  // someone at the door
+  if (topic === "zwave/switch/155") {
+    domoticz_helper(79, "Toggle")
+    // domoticz_helper(79, "Toggle")
+    prowl_helper("Chris", "Door")
+
+  }
+
 })
 
 const domoticz_helper = (idx, state) => client.publish('domoticz/in', JSON.stringify({
