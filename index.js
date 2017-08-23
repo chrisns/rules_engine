@@ -95,7 +95,7 @@ client.on('message', function (topic, message) {
     console.log("door bell!")
     domoticz_helper(79, "Toggle")
     domoticz_helper(79, "Toggle")
-    prowl_helper("Chris", "Door")
+    prowl_helper("all", "Someone at the door")
 
   }
 
@@ -107,7 +107,7 @@ const domoticz_helper = (idx, state) => client.publish('domoticz/in', JSON.strin
   switchcmd: state
 }), {qos: 0})
 
-const prowl_helper = (who, message) => prowl[who].push(message, 'Pinked', {
+const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink', {
   priority: 2,
 }, (err, remaining) => {
   if (err) console.error(err)
