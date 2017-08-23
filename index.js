@@ -28,8 +28,6 @@ client.on('connect', () => client.subscribe([
     "domoticz/out",
     "alarm/state",
     "alarm/new-state",
-    "presence/home/enter",
-    "presence/home/leave",
     "presence/home/+"
   ]
 ))

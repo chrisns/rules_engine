@@ -17,7 +17,6 @@ services:
     environment:
       - HANNAH_PROWL_KEY=${HANNAH_PROWL_KEY}
       - CHRIS_PROWL_KEY=${CHRIS_PROWL_KEY}
-      - SUBSCRIBE=owntracks/+/+/event
       - USER=${USER}
       - PASS=${PASS}
       - MQTT=${MQTT}
