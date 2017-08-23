@@ -28,7 +28,8 @@ client.on('connect', () => client.subscribe([
     "domoticz/out",
     "alarm/state",
     "alarm/new-state",
-    "presence/home/+"
+    "presence/home/+",
+    "zwave/switch/+"
   ]
 ))
 
@@ -90,9 +91,10 @@ client.on('message', function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "zwave/switch/155") {
+  if (topic === "zwave/switch/155" && message.nvalue === 0) {
+    console.log("door bell!")
     domoticz_helper(79, "Toggle")
-    // domoticz_helper(79, "Toggle")
+    domoticz_helper(79, "Toggle")
     prowl_helper("Chris", "Door")
 
   }
