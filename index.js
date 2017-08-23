@@ -1,6 +1,6 @@
 const Prowl = require('node-prowl')
-const mqttWildcard = require('mqtt-wildcard');
-
+const mqttWildcard = require('mqtt-wildcard')
+const request = require('request')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
@@ -96,7 +96,7 @@ client.on('message', function (topic, message) {
     domoticz_helper(79, "Toggle")
     domoticz_helper(79, "Toggle")
     prowl_helper("all", "Someone at the door")
-
+    say_helper("kitchen", "Someone at the door")
   }
 
 })
@@ -112,3 +112,8 @@ const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink
 }, (err, remaining) => {
   if (err) console.error(err)
 })
+
+const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
+
+//@TODO end the client cleanly when getting a kill
+
