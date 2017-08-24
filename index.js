@@ -121,7 +121,7 @@ const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink
   priority: 2,
 }, (err, remaining) => {
   if (err) console.error(err)
-  client.publish(`prowl/${who}/remaining`, JSON.stringify({remaining: remaining.toString()}), {retain: true})
+  client.publish(`prowl/${who}/remaining`, JSON.stringify({remaining: remaining}), {retain: true})
 })
 
 const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
