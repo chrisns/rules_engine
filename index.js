@@ -34,7 +34,7 @@ client.on('connect', () => client.subscribe(
     "presence/home/+",
     "zwave/switch/+"
   ], topic => shared_prefix + topic),
-  {qos: 2},
+  {qos: 1},
   (err, granted) => console.log(err, granted)
 ))
 
