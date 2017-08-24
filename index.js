@@ -4,12 +4,12 @@ const request = require('request')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY} = process.env
+const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME} = process.env
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
   clean: true,
-  clientId: "rules_engine"
+  clientId: `rules_engine${HOSTNAME}`
 })
 
 let prowl = {
@@ -25,14 +25,17 @@ let prowl = {
 
 const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
 
-client.on('connect', () => client.subscribe(_.map([
+client.on('connect', () => client.subscribe(
+  _.map([
     "owntracks/+/+/event",
     "domoticz/out",
     "alarm/state",
     "alarm/new-state",
     "presence/home/+",
     "zwave/switch/+"
-  ], topic => shared_prefix + topic)
+  ], topic => shared_prefix + topic),
+  {qos: 2},
+  (err, granted) => console.log(err, granted)
 ))
 
 let current_alarm_state
@@ -118,7 +121,7 @@ const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink
   priority: 2,
 }, (err, remaining) => {
   if (err) console.error(err)
-  client.publish("prowl/remaining", remaining, {retain: true})
+  client.publish("prowl/who-remaining", remaining.toString(), {retain: true})
 })
 
 const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
@@ -137,3 +140,11 @@ process.stdin.resume()
 process.on('exit', clean_exit);
 process.on('SIGINT', clean_exit);
 process.on('unclean_exit', clean_exit);
+
+client.on('connect', () => console.log("connected"))
+
+client.on('error', (error) => console.error(error))
+
+client.on('close', () => console.error("connection close"))
+
+client.on('offline', () => console.log("offline"))
