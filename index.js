@@ -89,6 +89,9 @@ client.on('message', function (topic, message) {
   }
 
   if (topic === "domoticz/out") {
+    message.svalue1 = float_helper(message.svalue1)
+    message.svalue2 = float_helper(message.svalue2)
+    message.svalue3 = float_helper(message.svalue3)
     client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
   }
 
@@ -103,6 +106,8 @@ client.on('message', function (topic, message) {
 
 })
 
+const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
+
 const domoticz_helper = (idx, state) => client.publish('domoticz/in', JSON.stringify({
   command: "switchlight",
   idx: idx,
@@ -113,6 +118,7 @@ const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink
   priority: 2,
 }, (err, remaining) => {
   if (err) console.error(err)
+  client.publish("prowl/remaining", remaining, {retain: true})
 })
 
 const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
