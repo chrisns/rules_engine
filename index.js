@@ -25,20 +25,25 @@ let prowl = {
 
 const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
 
-client.on('connect', () => client.subscribe(
-  _.map([
-    "owntracks/+/+/event",
-    "domoticz/out",
-    "alarm/state",
-    "alarm/new-state",
-    "presence/home/+",
-    "zwave/switch/+"
-  ], topic => shared_prefix + topic),
+const topics = _.map([
+  "owntracks/+/+/event",
+  "domoticz/out",
+  "alarm/new-state",
+  "presence/home/+",
+  "zwave/switch/+"
+], topic => shared_prefix + topic)
+topics.push("alarm/zones/4")
+topics.push("alarm/state")
+topics.push("alarm/status")
+
+client.on('connect', () => client.subscribe(topics,
   {qos: 1},
   (err, granted) => console.log(err, granted)
 ))
 
 let current_alarm_state
+let current_alarm_status
+let conservatory_is_open
 
 client.on('message', function (topic, message) {
   try {
@@ -60,6 +65,7 @@ client.on('message', function (topic, message) {
   // someone just got home
   if ((t = mqttWildcard(topic, 'presence/home/enter')) && t !== null) {
     console.log(`${message} just got home`)
+    say_helper("kitchen", `${message} just arrived`)
     client.publish('alarm/set-state', 'disarm')
   }
 
@@ -69,16 +75,33 @@ client.on('message', function (topic, message) {
     prowl_helper(message, "You have left home but not set the alarm")
   }
 
+  // if people leave
+  if ((t = mqttWildcard(topic, 'presence/home/leave')) && t !== null) {
+    say_helper("kitchen", `${message} just left`)
+  }
+
   // get the retained alarm state
   if ((t = mqttWildcard(topic, 'alarm/state')) && t !== null) {
     console.log(`Alarm state is ${message}`)
     current_alarm_state = message
   }
 
+  // get the retained alarm state
+  if (topic === 'alarm/status') {
+    console.log(`Alarm status is ${message}`)
+    current_alarm_status = message
+  }
+
+  if (topic === 'alarm/zones/4') {
+    conservatory_is_open = message.troubles !== null
+    console.log("conservatory open", conservatory_is_open)
+  }
+
   // react to new alarm state changes
   if ((t = mqttWildcard(topic, 'alarm/new-state')) && t !== null) {
     console.log(`Alarm state changed to ${message}`)
     prowl_helper("all", `Alarm state changed to ${message}`)
+    say_helper("kitchen", `Alarm is now ${message}`)
     if (message === "Disarm") {
       domoticz_helper(3, "Off")
       domoticz_helper(51, "On")
@@ -92,37 +115,48 @@ client.on('message', function (topic, message) {
   }
 
   if (topic === "domoticz/out") {
-    message.svalue1 = float_helper(message.svalue1)
-    message.svalue2 = float_helper(message.svalue2)
-    message.svalue3 = float_helper(message.svalue3)
     client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
+    _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
   // someone at the door
   if (topic === "zwave/switch/155" && message.nvalue === 1) {
     console.log("door bell!")
-    domoticz_helper(79, "Toggle")
-    domoticz_helper(79, "Toggle")
+    _.times(4, () => domoticz_helper(79, "Toggle"))
     prowl_helper("all", "Someone at the door")
     say_helper("kitchen", "Someone at the door")
+    say_helper("conservatory", "Someone at the door")
+    say_helper("desk", "Someone at the door")
+    if (conservatory_is_open === true && current_alarm_status === false) {
+      say_helper("garden", "Someone at the door")
+    }
   }
 
 })
 
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
 
-const domoticz_helper = (idx, state) => client.publish('domoticz/in', JSON.stringify({
-  command: "switchlight",
-  idx: idx,
-  switchcmd: state
-}), {qos: 0})
+const influx_helper = (device, what, value) =>
+  client.publish('influx/in', JSON.stringify({
+    device: device,
+    what: what,
+    value: float_helper(value)
+  }), {qos: 0})
 
-const prowl_helper = (who, message) => prowl[who].push(message, 'Le Chateau Pink', {
-  priority: 2,
-}, (err, remaining) => {
-  if (err) console.error(err)
-  client.publish(`prowl/${who}/remaining`, JSON.stringify({remaining: remaining}), {retain: true})
-})
+const domoticz_helper = (idx, state) =>
+  client.publish('domoticz/in', JSON.stringify({
+    command: "switchlight",
+    idx: idx,
+    switchcmd: state
+  }), {qos: 0})
+
+const prowl_helper = (who, message) =>
+  prowl[who].push(message, 'Le Chateau Pink', {
+    priority: 2,
+  }, (err, remaining) => {
+    if (err) console.error(err)
+    influx_helper(`prowl_${who}`, 'remaining', remaining)
+  })
 
 const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
 
