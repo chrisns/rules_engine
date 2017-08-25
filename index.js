@@ -116,7 +116,7 @@ client.on('message', function (topic, message) {
 
   if (topic === "domoticz/out") {
     client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
-    _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
+    _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
   // someone at the door
