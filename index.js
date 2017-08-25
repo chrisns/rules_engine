@@ -123,6 +123,10 @@ client.on('message', function (topic, message) {
   if (topic === "zwave/switch/155" && message.nvalue === 1) {
     console.log("door bell!")
     _.times(4, () => domoticz_helper(79, "Toggle"))
+    _.times(4, () => {
+      lights_helper("Desk", "muchdimmer")
+      lights_helper("Desk", "muchbrighter")
+    })
     prowl_helper("all", "Someone at the door")
     say_helper("kitchen", "Someone at the door")
     say_helper("conservatory", "Someone at the door")
@@ -133,6 +137,8 @@ client.on('message', function (topic, message) {
   }
 
 })
+
+const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
 
