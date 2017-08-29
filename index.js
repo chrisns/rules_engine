@@ -164,7 +164,9 @@ const prowl_helper = (who, message) =>
     influx_helper(`prowl_${who}`, 'remaining', remaining)
   })
 
-const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}`)
+const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}/${getSayVolume()}`)
+
+const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
 function clean_exit() {
   console.log("Closing connection (clean)")
