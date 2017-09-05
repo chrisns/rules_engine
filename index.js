@@ -119,22 +119,22 @@ client.on('message', function (topic, message) {
     _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
-  // someone at the door
-  if (topic === "zwave/switch/155" && message.nvalue === 0) {
-    console.log("door bell!")
-    _.times(4, () => domoticz_helper(79, "Toggle"))
-    _.times(4, () => {
-      lights_helper("Desk", "muchdimmer")
-      lights_helper("Desk", "muchbrighter")
-    })
-    prowl_helper("all", "Someone at the door")
-    say_helper("kitchen", "Someone at the door")
-    say_helper("conservatory", "Someone at the door")
-    say_helper("desk", "Someone at the door")
-    if (conservatory_is_open === true && current_alarm_status === false) {
-      say_helper("garden", "Someone at the door")
-    }
-  }
+  // // someone at the door
+  // if (topic === "zwave/switch/155" && message.nvalue === 0) {
+  //   console.log("door bell!")
+  //   _.times(4, () => domoticz_helper(79, "Toggle"))
+  //   _.times(4, () => {
+  //     lights_helper("Desk", "muchdimmer")
+  //     lights_helper("Desk", "muchbrighter")
+  //   })
+  //   prowl_helper("all", "Someone at the door")
+  //   say_helper("kitchen", "Someone at the door")
+  //   say_helper("conservatory", "Someone at the door")
+  //   say_helper("desk", "Someone at the door")
+  //   if (conservatory_is_open === true && current_alarm_status === false) {
+  //     say_helper("garden", "Someone at the door")
+  //   }
+  // }
 
 })
 
