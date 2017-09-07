@@ -6,6 +6,10 @@ services:
       replicas: 2
       restart_policy:
         condition: any
+      resources:
+        limits:
+          cpus: '0.40'
+          memory: 128M
       update_config:
         parallelism: 1
         delay: 10s
