@@ -109,8 +109,8 @@ client.on('message', function (topic, message) {
   if ((t = mqttWildcard(topic, 'alarm/new-state')) && t !== null) {
     console.log(`Alarm state changed to ${message}`)
     prowl_helper("all", `Alarm state changed to ${message}`)
-    say_helper("kitchen", `Alarm is now ${message}`)
     if (message === "Disarm") {
+      say_helper("kitchen", `Alarm is now disarmed`)
       domoticz_helper(3, "Off")
       domoticz_helper(51, "On")
     }
