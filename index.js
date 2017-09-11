@@ -1,8 +1,9 @@
 const Prowl = require('node-prowl')
 const mqttWildcard = require('mqtt-wildcard')
-const request = require('request')
 const mqtt = require('mqtt')
 const _ = require('lodash')
+
+const health = new require('healthful')({service: 'rules_engine', http: true, interval: 60 * 60 * 1000})
 
 const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME} = process.env
 const client = mqtt.connect(MQTT, {
@@ -46,6 +47,7 @@ let current_alarm_status
 let conservatory_is_open
 
 client.on('message', function (topic, message) {
+  health.ping()
   try {
     message = JSON.parse(message.toString())
   }
@@ -73,6 +75,12 @@ client.on('message', function (topic, message) {
   if ((t = mqttWildcard(topic, 'presence/home/leave')) && t !== null && current_alarm_state === "Disarm") {
     console.log(`${message} left with disarmed alarm`)
     prowl_helper(message, "You have left home but not set the alarm")
+  }
+
+  // if people arrive and the alarm is disarmed let them know
+  if ((t = mqttWildcard(topic, 'presence/home/arrive')) && t !== null && current_alarm_state === "Disarm") {
+    console.log(`${message} arrived to a disarmed alarm`)
+    prowl_helper(message, "You have arrived home the alarm is NOT armed")
   }
 
   // if people leave
@@ -119,22 +127,22 @@ client.on('message', function (topic, message) {
     _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
-  // // someone at the door
-  // if (topic === "zwave/switch/155" && message.nvalue === 0) {
-  //   console.log("door bell!")
-  //   _.times(4, () => domoticz_helper(79, "Toggle"))
-  //   _.times(4, () => {
-  //     lights_helper("Desk", "muchdimmer")
-  //     lights_helper("Desk", "muchbrighter")
-  //   })
-  //   prowl_helper("all", "Someone at the door")
-  //   say_helper("kitchen", "Someone at the door")
-  //   say_helper("conservatory", "Someone at the door")
-  //   say_helper("desk", "Someone at the door")
-  //   if (conservatory_is_open === true && current_alarm_status === false) {
-  //     say_helper("garden", "Someone at the door")
-  //   }
-  // }
+  // someone at the door
+  if (topic === "zwave/switch/155" && message.nvalue === 1) {
+    console.log("door bell!")
+    _.times(4, () => domoticz_helper(79, "Toggle"))
+    _.times(4, () => {
+      lights_helper("Desk", "muchdimmer")
+      lights_helper("Desk", "muchbrighter")
+    })
+    prowl_helper("all", "Someone at the door")
+    // say_helper("kitchen", "Someone at the door")
+    // say_helper("conservatory", "Someone at the door")
+    // say_helper("desk", "Someone at the door")
+    if (conservatory_is_open === true && current_alarm_status === false) {
+      // say_helper("garden", "Someone at the door")
+    }
+  }
 
 })
 
@@ -164,7 +172,8 @@ const prowl_helper = (who, message) =>
     influx_helper(`prowl_${who}`, 'remaining', remaining)
   })
 
-const say_helper = (where, what) => request.get(`http://192.168.0.3:5005/${where}/say/${what}/${getSayVolume()}`)
+const say_helper = (where, what) =>
+  client.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
