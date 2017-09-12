@@ -3,8 +3,6 @@ const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const health = new require('healthful')({service: 'rules_engine', http: true, interval: 60 * 60 * 1000})
-
 const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME} = process.env
 const client = mqtt.connect(MQTT, {
   username: USER,
@@ -47,7 +45,6 @@ let current_alarm_status
 let conservatory_is_open
 
 client.on('message', function (topic, message) {
-  health.ping()
   try {
     message = JSON.parse(message.toString())
   }
