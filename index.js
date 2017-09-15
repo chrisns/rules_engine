@@ -129,6 +129,7 @@ client.on('message', function (topic, message) {
   if (topic === `notify/in/${CHRIS_FB_ID}`) {
     if (message === "Unlock the door") {
       domoticz_helper(3, "Off")
+      client.publish(`notify/in/${CHRIS_FB_ID}`, JSON.stringify({message: "Unlocked the door"}))
     }
   }
 
@@ -148,7 +149,7 @@ client.on('message', function (topic, message) {
       ]
     }))
 
-    prowl_helper("all", "Someone at the door")
+    // prowl_helper("all", "Someone at the door")
     // say_helper("kitchen", "Someone at the door")
     // say_helper("conservatory", "Someone at the door")
     // say_helper("desk", "Someone at the door")
