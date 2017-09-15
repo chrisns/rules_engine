@@ -20,6 +20,7 @@ services:
     environment:
       - HANNAH_PROWL_KEY=${HANNAH_PROWL_KEY}
       - CHRIS_PROWL_KEY=${CHRIS_PROWL_KEY}
+      - CHRIS_FB_ID=${CHRIS_FB_ID}
       - USER=${USER}
       - PASS=${PASS}
       - MQTT=${MQTT}

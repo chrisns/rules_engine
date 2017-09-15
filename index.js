@@ -3,7 +3,7 @@ const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME} = process.env
+const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME, CHRIS_FB_ID} = process.env
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
@@ -29,6 +29,7 @@ const topics = _.map([
   "domoticz/out",
   "alarm/new-state",
   "presence/home/+",
+  `notify/out/${CHRIS_FB_ID}`,
   "zwave/switch/+"
 ], topic => shared_prefix + topic)
 topics.push("alarm/zones/4")
@@ -124,6 +125,13 @@ client.on('message', function (topic, message) {
     _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
+  // react to facebook bot feedback
+  if (topic === `notify/in/${CHRIS_FB_ID}`) {
+    if (message === "Unlock the door") {
+      domoticz_helper(3, "Off")
+    }
+  }
+
   // someone at the door
   if (topic === "zwave/switch/155" && message.nvalue === 1) {
     console.log("door bell!")
@@ -132,6 +140,14 @@ client.on('message', function (topic, message) {
       lights_helper("Desk", "muchdimmer")
       lights_helper("Desk", "muchbrighter")
     })
+
+    client.publish(`notify/in/${CHRIS_FB_ID}`, JSON.stringify({
+      message: "Someone at the door",
+      buttons: [
+        {title: "Unlock the door", value: "Unlock the door"}
+      ]
+    }))
+
     prowl_helper("all", "Someone at the door")
     // say_helper("kitchen", "Someone at the door")
     // say_helper("conservatory", "Someone at the door")
