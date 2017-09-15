@@ -126,7 +126,7 @@ client.on('message', function (topic, message) {
   }
 
   // react to facebook bot feedback
-  if (topic === `notify/in/${CHRIS_FB_ID}`) {
+  if (topic === `notify/out/${CHRIS_FB_ID}`) {
     if (message === "Unlock the door") {
       domoticz_helper(3, "Off")
       client.publish(`notify/in/${CHRIS_FB_ID}`, JSON.stringify({message: "Unlocked the door"}))
