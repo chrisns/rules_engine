@@ -1,26 +1,14 @@
-const Prowl = require('node-prowl')
 const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const {USER, PASS, MQTT, CHRIS_PROWL_KEY, HANNAH_PROWL_KEY, HOSTNAME, CHRIS_FB_ID} = process.env
+const {USER, PASS, MQTT, HOSTNAME, CHRIS_FB_ID, HANNAH_FB_ID} = process.env
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
   clean: true,
   clientId: `rules_engine${HOSTNAME}`
 })
-
-let prowl = {
-  Hannah: new Prowl(HANNAH_PROWL_KEY),
-  Chris: new Prowl(CHRIS_PROWL_KEY),
-  all: {
-    push: (message) => {
-      prowl_helper("Hannah", message)
-      prowl_helper("Chris", message)
-    }
-  }
-}
 
 const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
 
@@ -30,8 +18,10 @@ const topics = _.map([
   "alarm/new-state",
   "presence/home/+",
   `notify/out/${CHRIS_FB_ID}`,
+  `notify/out/${HANNAH_FB_ID}`,
   "zwave/switch/+"
 ], topic => shared_prefix + topic)
+
 topics.push("alarm/zones/4")
 topics.push("alarm/state")
 topics.push("alarm/status")
@@ -63,31 +53,31 @@ client.on('message', function (topic, message) {
   }
 
   // someone just got home
-  if ((t = mqttWildcard(topic, 'presence/home/enter')) && t !== null) {
+  if (topic === 'presence/home/enter') {
     console.log(`${message} just got home`)
     say_helper("kitchen", `${message} just arrived`)
     client.publish('alarm/set-state', 'disarm')
   }
 
   // if people leave without setting an alarm
-  if ((t = mqttWildcard(topic, 'presence/home/leave')) && t !== null && current_alarm_state === "Disarm") {
+  if (topic === 'presence/home/leave' && current_alarm_state === "Disarm") {
     console.log(`${message} left with disarmed alarm`)
-    prowl_helper(message, "You have left home but not set the alarm")
+    notify_helper(FB_MAP[message], "You have left home but not set the alarm", [messages.arm_alarm_away, messages.arm_alarm_home])
   }
 
   // if people arrive and the alarm is disarmed let them know
-  if ((t = mqttWildcard(topic, 'presence/home/arrive')) && t !== null && current_alarm_state === "Disarm") {
+  if (topic === 'presence/home/arrive' && current_alarm_state === "Disarm") {
     console.log(`${message} arrived to a disarmed alarm`)
-    prowl_helper(message, "You have arrived home the alarm is NOT armed")
+    notify_helper(FB_MAP[message], "You have arrived home the alarm is NOT armed")
   }
 
   // if people leave
-  if ((t = mqttWildcard(topic, 'presence/home/leave')) && t !== null) {
+  if (topic === 'presence/home/leave') {
     say_helper("kitchen", `${message} just left`)
   }
 
   // get the retained alarm state
-  if ((t = mqttWildcard(topic, 'alarm/state')) && t !== null) {
+  if (topic === 'alarm/state') {
     console.log(`Alarm state is ${message}`)
     current_alarm_state = message
   }
@@ -104,9 +94,10 @@ client.on('message', function (topic, message) {
   }
 
   // react to new alarm state changes
-  if ((t = mqttWildcard(topic, 'alarm/new-state')) && t !== null) {
+  if (topic === 'alarm/new-state') {
     console.log(`Alarm state changed to ${message}`)
-    prowl_helper("all", `Alarm state changed to ${message}`)
+    notify_all(`Alarm state changed to ${message}`)
+
     if (message === "Disarm") {
       say_helper("kitchen", `Alarm is now disarmed`)
       domoticz_helper(3, "Off")
@@ -117,7 +108,7 @@ client.on('message', function (topic, message) {
   // zwave low battery alert
   if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
     console.log(`${message.idx} ${message.name} is low on battery`)
-    prowl_helper("Chris", `zwave device ${message.idx} ${message.name} is low on battery`)
+    notify_helper("Chris", `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
   if (topic === "domoticz/out") {
@@ -125,16 +116,35 @@ client.on('message', function (topic, message) {
     _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
   }
 
-  // react to facebook bot feedback
-  if (topic === `notify/out/${CHRIS_FB_ID}`) {
-    if (message === "Unlock the door") {
+  // react to facebook bot commands
+  if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
+    console.log(`FB user ${t[0]} just sent:"${message}:`)
+    if (message === messages.unlock_door)
       domoticz_helper(3, "Off")
-      client.publish(`notify/in/${CHRIS_FB_ID}`, JSON.stringify({message: "Unlocked the door"}))
+
+    if (message === messages.arm_alarm_home)
+      client.publish('alarm/set-state', 'arm_home')
+
+    if (message === messages.arm_alarm_away)
+      client.publish('alarm/set-state', 'arm_away')
+
+    if (message === messages.disarm_alarm)
+      client.publish('alarm/set-state', 'disarm')
+
+    if (message.toLowerCase().startsWith("say")) {
+      let split_message = /say\s(\w+)(.*)/gi.exec(message)
+      say_helper(split_message[1], split_message[2])
     }
+
+    if (message === messages.alarm)
+      notify_helper(t[0], `You can do these things`, [messages.arm_alarm_home, messages.arm_alarm_away, messages.disarm_alarm])
+    // send acknowledgement back to user
+
+    notify_helper(t[0].toString(), "ACK")
   }
 
   // someone at the door
-  if (topic === "zwave/switch/155" && message.nvalue === 1) {
+  if (topic === "zwave/switch/155NOO" && message.nvalue === 1) {
     console.log("door bell!")
     _.times(4, () => domoticz_helper(79, "Toggle"))
     _.times(4, () => {
@@ -142,14 +152,9 @@ client.on('message', function (topic, message) {
       lights_helper("Desk", "muchbrighter")
     })
 
-    client.publish(`notify/in/${CHRIS_FB_ID}`, JSON.stringify({
-      message: "Someone at the door",
-      buttons: [
-        {title: "Unlock the door", value: "Unlock the door"}
-      ]
-    }))
+    //@todo send photo
+    notify_all("Someone at the door", [messages.unlock_door])
 
-    // prowl_helper("all", "Someone at the door")
     // say_helper("kitchen", "Someone at the door")
     // say_helper("conservatory", "Someone at the door")
     // say_helper("desk", "Someone at the door")
@@ -160,9 +165,35 @@ client.on('message', function (topic, message) {
 
 })
 
+const messages = {
+  alarm: "Alarm",
+  unlock_door: "Unlock the door",
+  arm_alarm_home: "Arm alarm home",
+  arm_alarm_away: "Arm alarm away",
+  disarm_alarm: "Disarm alarm"
+}
+
+const FB_MAP = {
+  Chris: CHRIS_FB_ID,
+  Hannah: HANNAH_FB_ID
+}
+
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
+
+const notify_all = (message, actions) => {
+  notify_helper(CHRIS_FB_ID, message, actions)
+  notify_helper(HANNAH_FB_ID, message, actions)
+}
+
+const notify_helper = (who, message, actions) =>
+  client.publish(`notify/in/${who}`, JSON.stringify({
+    message: message,
+    buttons: actions ? _.map(actions, action => {
+      return {title: action, value: action}
+    }) : null
+  }))
 
 const influx_helper = (device, what, value) =>
   client.publish('influx/in', JSON.stringify({
@@ -177,14 +208,6 @@ const domoticz_helper = (idx, state) =>
     idx: idx,
     switchcmd: state
   }), {qos: 0})
-
-const prowl_helper = (who, message) =>
-  prowl[who].push(message, 'Le Chateau Pink', {
-    priority: 2,
-  }, (err, remaining) => {
-    if (err) console.error(err)
-    influx_helper(`prowl_${who}`, 'remaining', remaining)
-  })
 
 const say_helper = (where, what) =>
   client.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})

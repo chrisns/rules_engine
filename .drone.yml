@@ -10,7 +10,7 @@ pipeline:
 
   deploy:
     image: docker
-    secrets: [ HANNAH_PROWL_KEY, CHRIS_PROWL_KEY, CHRIS_FB_ID, USER, PASS, MQTT ]
+    secrets: [ HANNAH_FB_ID, CHRIS_FB_ID, USER, PASS, MQTT ]
     commands:
       - docker deploy --compose-file docker-compose.yml rules_engine
     volumes:
