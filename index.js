@@ -108,13 +108,13 @@ client.on('message', function (topic, message) {
   // zwave low battery alert
   if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
     console.log(`${message.idx} ${message.name} is low on battery`)
-    notify_helper("Chris", `zwave device ${message.idx} ${message.name} is low on battery`)
+    notify_helper(CHRIS_FB_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
-  if (topic === "domoticz/out") {
-    client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
-    _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
-  }
+  // if (topic === "domoticz/out") {
+  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
+  //   _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
+  // }
 
   // react to facebook bot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
