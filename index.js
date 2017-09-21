@@ -144,7 +144,7 @@ client.on('message', function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "zwave/switch/155NOO" && message.nvalue === 1) {
+  if (topic === "domoticz/out" && message.stype === "Switch" && topic === message.idx === 155 && message.nvalue === 1) {
     console.log("door bell!")
     _.times(4, () => domoticz_helper(79, "Toggle"))
     _.times(4, () => {
@@ -155,7 +155,7 @@ client.on('message', function (topic, message) {
     //@todo send photo
     notify_all("Someone at the door", [messages.unlock_door])
 
-    // say_helper("kitchen", "Someone at the door")
+    say_helper("kitchen", "Someone at the door")
     // say_helper("conservatory", "Someone at the door")
     // say_helper("desk", "Someone at the door")
     if (conservatory_is_open === true && current_alarm_status === false) {
