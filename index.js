@@ -118,6 +118,9 @@ client.on('message', function (topic, message) {
 
   // react to facebook bot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
+    // send acknowledgement back to user
+    notify_helper(t[0].toString(), "ACK", null, false)
+
     message = message.toLowerCase()
     console.log(`FB user ${t[0]} just sent:"${message}:`)
     if (message === messages.unlock_door.toLowerCase())
@@ -132,16 +135,16 @@ client.on('message', function (topic, message) {
     if (message === messages.disarm_alarm.toLowerCase())
       client.publish('alarm/set-state', 'disarm')
 
-    if (message.toLowerCase().startsWith("say")) {
+    if (message.startsWith("say")) {
       let split_message = /say\s(\w+)(.*)/gi.exec(message)
       say_helper(split_message[1], split_message[2])
     }
 
     if (message === messages.alarm.toLowerCase())
       notify_helper(t[0], `You can do these things`, [messages.arm_alarm_home, messages.arm_alarm_away, messages.disarm_alarm])
-    // send acknowledgement back to user
 
-    notify_helper(t[0].toString(), "ACK")
+    if (message === messages.start)
+      notify_helper(t[0], `You can do these things`, messages)
   }
 
   // someone at the door
@@ -167,6 +170,7 @@ client.on('message', function (topic, message) {
 })
 
 const messages = {
+  start: "/start",
   alarm: "Alarm",
   unlock_door: "Unlock the door",
   arm_alarm_home: "Arm alarm home",
@@ -183,8 +187,9 @@ const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, s
 
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
 
-const notify_helper = (who, message, actions) =>
+const notify_helper = (who, message, actions, disableNotification) =>
   client.publish(`notify/in/${who}`, JSON.stringify({
+    disableNotification: disableNotification,
     message: message,
     buttons: actions ? _.map(actions, action => {
       return {title: action, value: action}
