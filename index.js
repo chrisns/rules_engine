@@ -2,7 +2,7 @@ const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const {USER, PASS, MQTT, HOSTNAME, CHRIS_FB_ID, HANNAH_FB_ID} = process.env
+const {USER, PASS, MQTT, HOSTNAME, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
@@ -17,8 +17,8 @@ const topics = _.map([
   "domoticz/out",
   "alarm/new-state",
   "presence/home/+",
-  `notify/out/${CHRIS_FB_ID}`,
-  `notify/out/${HANNAH_FB_ID}`,
+  `notify/out/${CHRIS_TELEGRAM_ID}`,
+  `notify/out/${HANNAH_TELEGRAM_ID}`,
   "zwave/switch/+"
 ], topic => shared_prefix + topic)
 
@@ -96,7 +96,7 @@ client.on('message', function (topic, message) {
   // react to new alarm state changes
   if (topic === 'alarm/new-state') {
     console.log(`Alarm state changed to ${message}`)
-    notify_all(`Alarm state changed to ${message}`)
+    notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message}`)
 
     if (message === "Disarm") {
       say_helper("kitchen", `Alarm is now disarmed`)
@@ -108,7 +108,7 @@ client.on('message', function (topic, message) {
   // zwave low battery alert
   if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
     console.log(`${message.idx} ${message.name} is low on battery`)
-    notify_helper(CHRIS_FB_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
+    notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
   // if (topic === "domoticz/out") {
@@ -118,17 +118,18 @@ client.on('message', function (topic, message) {
 
   // react to facebook bot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
+    message = message.toLowerCase()
     console.log(`FB user ${t[0]} just sent:"${message}:`)
-    if (message === messages.unlock_door)
+    if (message === messages.unlock_door.toLowerCase())
       domoticz_helper(3, "Off")
 
-    if (message === messages.arm_alarm_home)
+    if (message === messages.arm_alarm_home.toLowerCase())
       client.publish('alarm/set-state', 'arm_home')
 
-    if (message === messages.arm_alarm_away)
+    if (message === messages.arm_alarm_away.toLowerCase())
       client.publish('alarm/set-state', 'arm_away')
 
-    if (message === messages.disarm_alarm)
+    if (message === messages.disarm_alarm.toLowerCase())
       client.publish('alarm/set-state', 'disarm')
 
     if (message.toLowerCase().startsWith("say")) {
@@ -136,7 +137,7 @@ client.on('message', function (topic, message) {
       say_helper(split_message[1], split_message[2])
     }
 
-    if (message === messages.alarm)
+    if (message === messages.alarm.toLowerCase())
       notify_helper(t[0], `You can do these things`, [messages.arm_alarm_home, messages.arm_alarm_away, messages.disarm_alarm])
     // send acknowledgement back to user
 
@@ -153,7 +154,7 @@ client.on('message', function (topic, message) {
     })
 
     //@todo send photo
-    notify_all("Someone at the door", [messages.unlock_door])
+    notify_helper(GROUP_TELEGRAM_ID, "Someone at the door", [messages.unlock_door])
 
     say_helper("kitchen", "Someone at the door")
     // say_helper("conservatory", "Someone at the door")
@@ -174,18 +175,13 @@ const messages = {
 }
 
 const FB_MAP = {
-  Chris: CHRIS_FB_ID,
-  Hannah: HANNAH_FB_ID
+  Chris: CHRIS_TELEGRAM_ID,
+  Hannah: HANNAH_TELEGRAM_ID
 }
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
-
-const notify_all = (message, actions) => {
-  notify_helper(CHRIS_FB_ID, message, actions)
-  notify_helper(HANNAH_FB_ID, message, actions)
-}
 
 const notify_helper = (who, message, actions) =>
   client.publish(`notify/in/${who}`, JSON.stringify({

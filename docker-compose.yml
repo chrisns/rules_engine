@@ -18,8 +18,9 @@ services:
         max_failure_ratio: 0.3
     image: pinked/rules_engine:${DRONE_BUILD_NUMBER}
     environment:
-      - HANNAH_FB_ID=${HANNAH_FB_ID}
-      - CHRIS_FB_ID=${CHRIS_FB_ID}
+      - HANNAH_TELEGRAM_ID=${HANNAH_TELEGRAM_ID}
+      - CHRIS_TELEGRAM_ID=${CHRIS_TELEGRAM_ID}
+      - GROUP_TELEGRAM_ID=${GROUP_TELEGRAM_ID}
       - USER=${USER}
       - PASS=${PASS}
       - MQTT=${MQTT}
