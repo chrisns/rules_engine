@@ -62,13 +62,13 @@ client.on('message', function (topic, message) {
   // if people leave without setting an alarm
   if (topic === 'presence/home/leave' && current_alarm_state === "Disarm") {
     console.log(`${message} left with disarmed alarm`)
-    notify_helper(FB_MAP[message], "You have left home but not set the alarm", [messages.arm_alarm_away, messages.arm_alarm_home])
+    notify_helper(TL_MAP[message.toLowerCase()], "You have left home but not set the alarm", [messages.arm_alarm_away, messages.arm_alarm_home])
   }
 
   // if people arrive and the alarm is disarmed let them know
   if (topic === 'presence/home/arrive' && current_alarm_state === "Disarm") {
     console.log(`${message} arrived to a disarmed alarm`)
-    notify_helper(FB_MAP[message], "You have arrived home the alarm is NOT armed")
+    notify_helper(TL_MAP[message.toLowerCase()], "You have arrived home the alarm is NOT armed")
   }
 
   // if people leave
@@ -178,9 +178,9 @@ const messages = {
   disarm_alarm: "Disarm alarm"
 }
 
-const FB_MAP = {
-  Chris: CHRIS_TELEGRAM_ID,
-  Hannah: HANNAH_TELEGRAM_ID
+const TL_MAP = {
+  chris: CHRIS_TELEGRAM_ID,
+  hannah: HANNAH_TELEGRAM_ID
 }
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
