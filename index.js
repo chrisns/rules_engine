@@ -94,7 +94,7 @@ client.on('message', function (topic, message) {
   }
 
   // react to new alarm state changes
-  if (topic === 'alarm/new-state') {
+  if (topic === 'alarm/new-state' && message !== 'ExitDelayAway' && message !== 'ExitDelayHome') {
     console.log(`Alarm state changed to ${message}`)
     notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message}`)
 
