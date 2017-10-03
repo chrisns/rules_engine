@@ -111,18 +111,14 @@ client.on('message', function (topic, message) {
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
-  // if (topic === "domoticz/out") {
-  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
-  //   _.forEach(["Battery", "RSSI", "nvalue", "svalue1", "svalue2", "svalue3"], value => message[value] !== null && influx_helper(`${message.name}_${message.idx}`, value.toLowerCase(), message[value]))
-  // }
-
-  // react to facebook bot commands
+  // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
     // send acknowledgement back to user
     notify_helper(t[0].toString(), "ACK", null, false)
 
     message = message.toLowerCase()
     console.log(`FB user ${t[0]} just sent:"${message}:`)
+
     if (message === messages.unlock_door.toLowerCase())
       domoticz_helper(3, "Off")
 
@@ -139,9 +135,6 @@ client.on('message', function (topic, message) {
       let split_message = /say\s(\w+)(.*)/gi.exec(message)
       say_helper(split_message[1], split_message[2])
     }
-
-    if (message === messages.alarm.toLowerCase())
-      notify_helper(t[0], `You can do these things`, [messages.arm_alarm_home, messages.arm_alarm_away, messages.disarm_alarm])
 
     if (message === messages.start)
       notify_helper(t[0], `You can do these things`, messages)
@@ -171,7 +164,6 @@ client.on('message', function (topic, message) {
 
 const messages = {
   start: "/start",
-  alarm: "Alarm",
   unlock_door: "Unlock the door",
   arm_alarm_home: "Arm alarm home",
   arm_alarm_away: "Arm alarm away",
@@ -195,13 +187,6 @@ const notify_helper = (who, message, actions, disableNotification) =>
       return {title: action, value: action}
     }) : null
   }))
-
-const influx_helper = (device, what, value) =>
-  client.publish('influx/in', JSON.stringify({
-    device: device,
-    what: what,
-    value: float_helper(value)
-  }), {qos: 0})
 
 const domoticz_helper = (idx, state) =>
   client.publish('domoticz/in', JSON.stringify({
