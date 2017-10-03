@@ -141,7 +141,7 @@ client.on('message', function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155) {
+  if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
     console.log("door bell!")
     _.times(4, () => domoticz_helper(79, "Toggle"))
     _.times(4, () => {
