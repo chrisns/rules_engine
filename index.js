@@ -117,7 +117,7 @@ client.on('message', function (topic, message) {
     notify_helper(t[0].toString(), "ACK", null, false)
 
     message = message.toLowerCase()
-    console.log(`FB user ${t[0]} just sent:"${message}:`)
+    console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
     if (message === messages.unlock_door.toLowerCase())
       domoticz_helper(3, "Off")
@@ -141,7 +141,7 @@ client.on('message', function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "domoticz/out" && message.stype === "Switch" && topic === message.idx === 155 && message.nvalue === 1) {
+  if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155) {
     console.log("door bell!")
     _.times(4, () => domoticz_helper(79, "Toggle"))
     _.times(4, () => {
