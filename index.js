@@ -10,6 +10,13 @@ const client = mqtt.connect(MQTT, {
   clientId: `rules_engine${HOSTNAME}`
 })
 
+const clientNotSharedSubscriptions = mqtt.connect(MQTT, {
+  username: USER,
+  password: PASS,
+  clean: true,
+  clientId: `rules_engine${HOSTNAME}_state`
+})
+
 const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
 
 const topics = _.map([
@@ -22,12 +29,8 @@ const topics = _.map([
   "zwave/switch/+"
 ], topic => shared_prefix + topic)
 
-topics.push("alarm/zones/4")
-topics.push("alarm/state")
-topics.push("alarm/status")
-
 client.on('connect', () => client.subscribe(topics,
-  {qos: 1},
+  {qos: 2},
   (err, granted) => console.log(err, granted)
 ))
 
@@ -36,12 +39,7 @@ let current_alarm_status
 let conservatory_is_open
 
 client.on('message', function (topic, message) {
-  try {
-    message = JSON.parse(message.toString())
-  }
-  catch (e) {
-    message = message.toString()
-  }
+  message = message_parser(message)
 
   let t
   if ((t = mqttWildcard(topic, 'owntracks/+/+/event')) && t !== null) {
@@ -56,6 +54,7 @@ client.on('message', function (topic, message) {
   if (topic === 'presence/home/enter') {
     console.log(`${message} just got home`)
     say_helper("kitchen", `${message} just arrived`)
+    notify_helper(TL_MAP[message.toLowerCase()], "You just got back, I've tried to disarm the alarm, you should get another message to confirm this has been successful")
     client.publish('alarm/set-state', 'disarm')
   }
 
@@ -76,25 +75,8 @@ client.on('message', function (topic, message) {
     say_helper("kitchen", `${message} just left`)
   }
 
-  // get the retained alarm state
-  if (topic === 'alarm/state') {
-    console.log(`Alarm state is ${message}`)
-    current_alarm_state = message
-  }
-
-  // get the retained alarm state
-  if (topic === 'alarm/status') {
-    console.log(`Alarm status is ${message}`)
-    current_alarm_status = message
-  }
-
-  if (topic === 'alarm/zones/4') {
-    conservatory_is_open = message.troubles !== null
-    console.log("conservatory open", conservatory_is_open)
-  }
-
   // react to new alarm state changes
-  if (topic === 'alarm/new-state' && message !== 'ExitDelayAway' && message !== 'ExitDelayHome') {
+  if (topic === 'alarm/new-state') {
     console.log(`Alarm state changed to ${message}`)
     notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message}`)
 
@@ -107,7 +89,6 @@ client.on('message', function (topic, message) {
 
   // zwave low battery alert
   if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
-    console.log(`${message.idx} ${message.name} is low on battery`)
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
@@ -143,23 +124,58 @@ client.on('message', function (topic, message) {
   // someone at the door
   if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
     console.log("door bell!")
-    _.times(4, () => domoticz_helper(79, "Toggle"))
-    _.times(4, () => {
-      lights_helper("Desk", "muchdimmer")
-      lights_helper("Desk", "muchbrighter")
-    })
+
+    if (current_alarm_state !== "Away") {
+      _.times(4, () => domoticz_helper(79, "Toggle"))
+      _.times(4, () => {
+        lights_helper("Desk", "muchdimmer")
+        lights_helper("Desk", "muchbrighter")
+      })
+      say_helper("kitchen", "Someone at the door")
+      say_helper("conservatory", "Someone at the door")
+      say_helper("desk", "Someone at the door")
+      if (conservatory_is_open === true && current_alarm_status === false) {
+        say_helper("garden", "Someone at the door")
+      }
+    }
 
     //@todo send photo
     notify_helper(GROUP_TELEGRAM_ID, "Someone at the door", [messages.unlock_door])
 
-    say_helper("kitchen", "Someone at the door")
-    // say_helper("conservatory", "Someone at the door")
-    // say_helper("desk", "Someone at the door")
-    if (conservatory_is_open === true && current_alarm_status === false) {
-      // say_helper("garden", "Someone at the door")
-    }
   }
 
+})
+
+clientNotSharedSubscriptions.on('connect', () => client.subscribe(
+  [
+    "alarm/zones/4",
+    "alarm/state",
+    "alarm/status"
+  ],
+  {qos: 1},
+  (err, granted) => console.log(err, granted)
+))
+
+// handle getting the state in a separate client session
+clientNotSharedSubscriptions.on('message', (topic, message) => {
+  message = message_parser(message)
+
+  // get the retained alarm state
+  if (topic === 'alarm/state') {
+    console.log(`Alarm state is ${message}`)
+    current_alarm_state = message
+  }
+
+  // get the retained alarm state
+  if (topic === 'alarm/status') {
+    console.log(`Alarm status is ${message}`)
+    current_alarm_status = message
+  }
+
+  if (topic === 'alarm/zones/4') {
+    conservatory_is_open = message.troubles !== null
+    console.log("conservatory open", conservatory_is_open)
+  }
 })
 
 const messages = {
@@ -173,6 +189,15 @@ const messages = {
 const TL_MAP = {
   chris: CHRIS_TELEGRAM_ID,
   hannah: HANNAH_TELEGRAM_ID
+}
+
+const message_parser = message => {
+  try {
+    return JSON.parse(message.toString())
+  }
+  catch (e) {
+    return message.toString()
+  }
 }
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
