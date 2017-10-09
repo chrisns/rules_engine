@@ -95,7 +95,7 @@ client.on('message', function (topic, message) {
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
     // send acknowledgement back to user
-    notify_helper(t[0].toString(), "ACK", null, false)
+    notify_helper(t[0].toString(), "ACK", null, true)
 
     message = message.toLowerCase()
     console.log(`Telegram user ${t[0]} just sent:"${message}"`)
