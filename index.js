@@ -50,6 +50,9 @@ client.on('message', function (topic, message) {
     }
   }
 
+  if (topic === "domoticz/out")
+    client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
+
   // someone just got home
   if (topic === 'presence/home/enter') {
     console.log(`${message} just got home`)
