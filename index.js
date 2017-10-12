@@ -227,12 +227,16 @@ const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
 function clean_exit() {
   console.log("Closing connection (clean)")
-  client.end(false, () => process.exit(0))
+  client.end(false, () =>
+    clientNotSharedSubscriptions.end(false, () =>
+      process.exit(0)))
 }
 
 function unclean_exit() {
   console.log("Closing connection (unclean)")
-  client.end(false, () => process.exit(1))
+  client.end(false, () =>
+    clientNotSharedSubscriptions.end(false, () =>
+      process.exit(1)))
 }
 
 process.stdin.resume()
