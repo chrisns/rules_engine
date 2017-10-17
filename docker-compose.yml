@@ -3,7 +3,7 @@ services:
   rules_engine:
     read_only: true
     deploy:
-      replicas: 2
+      replicas: 1
       restart_policy:
         condition: any
       resources:

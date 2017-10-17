@@ -6,20 +6,20 @@ const {USER, PASS, MQTT, HOSTNAME, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
-  clean: true,
-  clientId: `rules_engine${HOSTNAME}`
+  clean: false,
+  clientId: `rules_engine`
 })
 
 const clientNotSharedSubscriptions = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
-  clean: true,
-  clientId: `rules_engine${HOSTNAME}_state`
+  clean: false,
+  clientId: `rules_engine_state`
 })
 
 const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
 
-const topics = _.map([
+const topics = [
   "owntracks/+/+/event",
   "domoticz/out",
   "alarm/new-state",
@@ -27,7 +27,7 @@ const topics = _.map([
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`,
   "zwave/switch/+"
-], topic => shared_prefix + topic)
+]
 
 client.on('connect', () => client.subscribe(topics,
   {qos: 2},
