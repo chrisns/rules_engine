@@ -10,8 +10,10 @@ pipeline:
 
   deploy:
     image: docker
-    secrets: [ HANNAH_TELEGRAM_ID, CHRIS_TELEGRAM_ID, GROUP_TELEGRAM_ID, USER, PASS, MQTT ]
+    secrets: [ HANNAH_TELEGRAM_ID, CHRIS_TELEGRAM_ID, GROUP_TELEGRAM_ID, USER, PASS, MQTT, AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION ]
     commands:
       - docker deploy --compose-file docker-compose.yml rules_engine
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      branch: master

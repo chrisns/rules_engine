@@ -2,7 +2,17 @@ const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
 
-const {USER, PASS, MQTT, HOSTNAME, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, USER, PASS, MQTT, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+
+const AWSMqtt = require("aws-mqtt-client").default
+
+const awsMqttClient = new AWSMqtt({
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  endpointAddress: AWS_IOT_ENDPOINT_HOST,
+  region: AWS_REGION
+})
+
 const client = mqtt.connect(MQTT, {
   username: USER,
   password: PASS,
@@ -10,28 +20,30 @@ const client = mqtt.connect(MQTT, {
   clientId: `rules_engine`
 })
 
-const clientNotSharedSubscriptions = mqtt.connect(MQTT, {
-  username: USER,
-  password: PASS,
-  clean: false,
-  clientId: `rules_engine_state`
-})
-
-const shared_prefix = process.env.NODE_ENV === "production" ? "$share/rules-engine/" : ""
-
 const topics = [
   "owntracks/+/+/event",
-  "domoticz/out",
+  // "domoticz/out",
   "alarm/new-state",
   "presence/home/+",
+  "alarm/zones/4",
+  "alarm/state",
+  "alarm/status"
+]
+
+const awsTopics = [
+  "domoticz/out",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
-  `notify/out/${HANNAH_TELEGRAM_ID}`,
-  "zwave/switch/+"
+  `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
 
 client.on('connect', () => client.subscribe(topics,
   {qos: 2},
-  (err, granted) => console.log(err, granted)
+  (err, granted) => console.log("mqtt", err, granted)
+))
+
+awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
+  {qos: 1},
+  (err, granted) => console.log("aws", err, granted)
 ))
 
 let current_alarm_state
@@ -50,8 +62,8 @@ client.on('message', function (topic, message) {
     }
   }
 
-  if (topic === "domoticz/out")
-    client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
+  // if (topic === "domoticz/out")
+  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
 
   // someone just got home
   if (topic === 'presence/home/enter') {
@@ -90,10 +102,26 @@ client.on('message', function (topic, message) {
     }
   }
 
-  // zwave low battery alert
-  if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
-    notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
+  // get the retained alarm state
+  if (topic === 'alarm/state') {
+    console.log(`Alarm state is ${message}`)
+    current_alarm_state = message
   }
+
+  // get the retained alarm state
+  if (topic === 'alarm/status') {
+    console.log(`Alarm status is ${message}`)
+    current_alarm_status = message
+  }
+
+  if (topic === 'alarm/zones/4') {
+    conservatory_is_open = message.troubles !== null
+    console.log("conservatory open", conservatory_is_open)
+  }
+})
+
+awsMqttClient.on('message', function (topic, message) {
+  message = message_parser(message)
 
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
@@ -147,38 +175,11 @@ client.on('message', function (topic, message) {
 
   }
 
-})
-
-clientNotSharedSubscriptions.on('connect', () => client.subscribe(
-  [
-    "alarm/zones/4",
-    "alarm/state",
-    "alarm/status"
-  ],
-  {qos: 1},
-  (err, granted) => console.log(err, granted)
-))
-
-// handle getting the state in a separate client session
-clientNotSharedSubscriptions.on('message', (topic, message) => {
-  message = message_parser(message)
-
-  // get the retained alarm state
-  if (topic === 'alarm/state') {
-    console.log(`Alarm state is ${message}`)
-    current_alarm_state = message
+  // zwave low battery alert
+  if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
+    notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
   }
 
-  // get the retained alarm state
-  if (topic === 'alarm/status') {
-    console.log(`Alarm status is ${message}`)
-    current_alarm_status = message
-  }
-
-  if (topic === 'alarm/zones/4') {
-    conservatory_is_open = message.troubles !== null
-    console.log("conservatory open", conservatory_is_open)
-  }
 })
 
 const messages = {
@@ -208,7 +209,7 @@ const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, s
 const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
 
 const notify_helper = (who, message, actions, disableNotification) =>
-  client.publish(`notify/in/${who}`, JSON.stringify({
+  awsMqttClient.publish(`notify/in/${who}`, JSON.stringify({
     disableNotification: disableNotification,
     message: message,
     buttons: actions ? _.map(actions, action => {
@@ -217,7 +218,7 @@ const notify_helper = (who, message, actions, disableNotification) =>
   }))
 
 const domoticz_helper = (idx, state) =>
-  client.publish('domoticz/in', JSON.stringify({
+  awsMqttClient.publish('domoticz/in', JSON.stringify({
     command: "switchlight",
     idx: idx,
     switchcmd: state
@@ -231,15 +232,13 @@ const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 function clean_exit() {
   console.log("Closing connection (clean)")
   client.end(false, () =>
-    clientNotSharedSubscriptions.end(false, () =>
-      process.exit(0)))
+    process.exit(0))
 }
 
 function unclean_exit() {
   console.log("Closing connection (unclean)")
   client.end(false, () =>
-    clientNotSharedSubscriptions.end(false, () =>
-      process.exit(1)))
+    process.exit(1))
 }
 
 process.stdin.resume()
@@ -247,10 +246,12 @@ process.on('exit', clean_exit);
 process.on('SIGINT', clean_exit);
 process.on('unclean_exit', clean_exit);
 
-client.on('connect', () => console.log("connected"))
+client.on('connect', () => console.log("mqtt connected"))
+client.on('error', (error) => console.error("mqtt", error))
+client.on('close', () => console.error("mqtt connection close"))
+client.on('offline', () => console.log("mqtt offline"))
 
-client.on('error', (error) => console.error(error))
-
-client.on('close', () => console.error("connection close"))
-
-client.on('offline', () => console.log("offline"))
+awsMqttClient.on('connect', () => console.log("aws connected"))
+awsMqttClient.on('error', (error) => console.error("aws", error))
+awsMqttClient.on('close', () => console.error("aws connection close"))
+awsMqttClient.on('offline', () => console.log("aws offline"))
