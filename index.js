@@ -62,9 +62,6 @@ client.on('message', function (topic, message) {
     }
   }
 
-  // if (topic === "domoticz/out")
-  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
-
   // someone just got home
   if (topic === 'presence/home/enter') {
     console.log(`${message} just got home`)
@@ -151,6 +148,9 @@ awsMqttClient.on('message', function (topic, message) {
     if (message === messages.start)
       notify_helper(t[0], `You can do these things`, messages)
   }
+
+  if (topic === "domoticz/out")
+    client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
 
   // someone at the door
   if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
