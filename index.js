@@ -225,7 +225,7 @@ const domoticz_helper = (idx, state) =>
   }), {qos: 0})
 
 const say_helper = (where, what) =>
-  client.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
+  awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
