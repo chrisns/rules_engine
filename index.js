@@ -31,6 +31,7 @@ const topics = [
 
 const awsTopics = [
   "domoticz/out",
+  "$aws/things/alarm_status/shadow/update/documents"
   "$aws/things/alarm_status/shadow/get/accepted",
   "$aws/things/alarm_zone_4/shadow/get/accepted",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
@@ -87,18 +88,6 @@ client.on('message', function (topic, message) {
     say_helper("kitchen", `${message} just left`)
   }
 
-  // react to new alarm state changes
-  if (topic === 'alarm/new-state') {
-    console.log(`Alarm state changed to ${message}`)
-    notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message}`)
-
-    if (message === "Disarm") {
-      say_helper("kitchen", `Alarm is now disarmed`)
-      domoticz_helper(3, "Off")
-      domoticz_helper(51, "On")
-    }
-  }
-
   // get the retained alarm state
   if (topic === 'alarm/state') {
     console.log(`Alarm state is ${message}`)
@@ -113,6 +102,19 @@ client.on('message', function (topic, message) {
 
 awsMqttClient.on('message', function (topic, message) {
   message = message_parser(message)
+
+  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
+    if (message.previous.state.reported.state !== message.current.state.reported.state) {
+      console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
+      notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
+
+      if(message.current.state.reported.state === "Disarm") {
+        say_helper("kitchen", `Alarm is now disarmed`)
+        domoticz_helper(3, "Off")
+        domoticz_helper(51, "On")
+      }
+    }
+  }
 
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
