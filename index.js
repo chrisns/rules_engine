@@ -32,6 +32,8 @@ const topics = [
 
 const awsTopics = [
   "domoticz/out",
+  "$aws/things/alarm_status/shadow/get/accepted",
+  "$aws/things/alarm_zone_4/shadow/get/accepted",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -132,7 +134,8 @@ awsMqttClient.on('message', function (topic, message) {
       domoticz_helper(3, "Off")
 
     if (message === messages.arm_alarm_home.toLowerCase())
-      client.publish('alarm/set-state', 'arm_home')
+      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_home"}}}))
+    // client.publish('alarm/set-state', 'arm_home')
 
     if (message === messages.arm_alarm_away.toLowerCase())
       client.publish('alarm/set-state', 'arm_away')
