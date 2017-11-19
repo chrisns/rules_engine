@@ -1,3 +1,5 @@
+/*eslint no-console: "off"*/
+
 const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
@@ -32,7 +34,7 @@ const topics = [
 const awsTopics = [
   "domoticz/out",
   "$aws/things/alarm_status/shadow/update/documents",
-  "$aws/things/alarm_status/shadow/get/accepted",
+  "$aws/things/alarm_zone_7/shadow/update/documents",
   "$aws/things/alarm_zone_4/shadow/get/accepted",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
@@ -88,18 +90,14 @@ client.on('message', function (topic, message) {
     say_helper("kitchen", `${message} just left`)
   }
 
-  if (topic === 'alarm/zones/4') {
-    conservatory_is_open = message.troubles !== null
-    console.log("conservatory open", conservatory_is_open)
-  }
 })
 
 awsMqttClient.on('message', function (topic, message) {
   message = message_parser(message)
 
-  // alarm state has changed
-  if (topic === "$aws/things/alarm_status/shadow/update/documents" {
+  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
     current_alarm_state = message.current.state.reported.state
+    // alarm state has changed
     if (message.previous.state.reported.state !== message.current.state.reported.state) {
       console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
       notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
@@ -110,6 +108,14 @@ awsMqttClient.on('message', function (topic, message) {
         domoticz_helper(51, "On")
       }
     }
+  }
+
+  if (topic = "$aws/things/alarm_zone_4/shadow/get/accepted" && message.previous.state.reported.troubles !== message.current.state.reported.troubles) {
+    say_helper("garage", `Alarm is currently ${current_alarm_state}`)
+  }
+
+  if (topic = "$aws/things/alarm_zone_4/shadow/get/accepted") {
+    conservatory_is_open = message.state.reported.troubles !== null
   }
 
   // react to chatbot commands
@@ -198,8 +204,6 @@ const message_parser = message => {
 }
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
-
-const float_helper = str => (str !== undefined && parseFloat(str) !== NaN) ? parseFloat(str) : str
 
 const notify_helper = (who, message, actions, disableNotification) =>
   awsMqttClient.publish(`notify/in/${who}`, JSON.stringify({
