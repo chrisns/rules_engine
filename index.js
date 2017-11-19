@@ -22,7 +22,6 @@ const client = mqtt.connect(MQTT, {
 
 const topics = [
   "owntracks/+/+/event",
-  // "domoticz/out",
   "alarm/new-state",
   "presence/home/+",
   "alarm/zones/4",
@@ -49,7 +48,6 @@ awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
 ))
 
 let current_alarm_state
-let current_alarm_status
 let conservatory_is_open
 
 client.on('message', function (topic, message) {
@@ -107,12 +105,6 @@ client.on('message', function (topic, message) {
     current_alarm_state = message
   }
 
-  // get the retained alarm state
-  if (topic === 'alarm/status') {
-    console.log(`Alarm status is ${message}`)
-    current_alarm_status = message
-  }
-
   if (topic === 'alarm/zones/4') {
     conservatory_is_open = message.troubles !== null
     console.log("conservatory open", conservatory_is_open)
@@ -138,10 +130,10 @@ awsMqttClient.on('message', function (topic, message) {
     // client.publish('alarm/set-state', 'arm_home')
 
     if (message === messages.arm_alarm_away.toLowerCase())
-      client.publish('alarm/set-state', 'arm_away')
+      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_away"}}}))
 
     if (message === messages.disarm_alarm.toLowerCase())
-      client.publish('alarm/set-state', 'disarm')
+      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "disarm"}}}))
 
     if (message.startsWith("say")) {
       let split_message = /say\s(\w+)(.*)/gi.exec(message)
@@ -168,7 +160,7 @@ awsMqttClient.on('message', function (topic, message) {
       say_helper("kitchen", "Someone at the door")
       say_helper("conservatory", "Someone at the door")
       say_helper("desk", "Someone at the door")
-      if (conservatory_is_open === true && current_alarm_status === false) {
+      if (conservatory_is_open === true) {
         say_helper("garden", "Someone at the door")
       }
     }
