@@ -105,7 +105,7 @@ awsMqttClient.on('message', function (topic, message) {
     }
   }
 
-  if (topic = '$aws/things/alarm_zone_7/shadow/update/documents' && message.previous.state.reported.troubles !== message.current.state.reported.troubles)
+  if (topic === '$aws/things/alarm_zone_7/shadow/update/documents' && message.previous.state.reported.troubles !== message.current.state.reported.troubles)
     say_helper("garage", `Alarm is currently ${current_alarm_state}`)
 
   if (topic = '$aws/things/alarm_zone_4/shadow/get/accepted')
