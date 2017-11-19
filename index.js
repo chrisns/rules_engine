@@ -24,11 +24,7 @@ const client = mqtt.connect(MQTT, {
 
 const topics = [
   "owntracks/+/+/event",
-  "alarm/new-state",
-  "presence/home/+",
-  "alarm/zones/4",
-  "alarm/state",
-  "alarm/status"
+  "presence/home/+"
 ]
 
 const awsTopics = [
@@ -70,7 +66,7 @@ client.on('message', function (topic, message) {
     console.log(`${message} just got home`)
     say_helper("kitchen", `${message} just arrived`)
     notify_helper(TL_MAP[message.toLowerCase()], "You just got back, I've tried to disarm the alarm, you should get another message to confirm this has been successful")
-    client.publish('alarm/set-state', 'disarm')
+    awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "disarm"}}}))
   }
 
   // if people leave without setting an alarm
@@ -131,7 +127,6 @@ awsMqttClient.on('message', function (topic, message) {
 
     if (message === messages.arm_alarm_home.toLowerCase())
       awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_home"}}}))
-    // client.publish('alarm/set-state', 'arm_home')
 
     if (message === messages.arm_alarm_away.toLowerCase())
       awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_away"}}}))
