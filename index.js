@@ -29,9 +29,9 @@ const topics = [
 
 const awsTopics = [
   "domoticz/out",
-  "$aws/things/alarm_status/shadow/update/documents",
-  "$aws/things/alarm_zone_7/shadow/update/documents",
-  "$aws/things/alarm_zone_4/shadow/get/accepted",
+  '$aws/things/alarm_status/shadow/update/documents',
+  '$aws/things/alarm_zone_7/shadow/update/documents',
+  '$aws/things/alarm_zone_4/shadow/get/accepted',
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -82,16 +82,15 @@ client.on('message', function (topic, message) {
   }
 
   // if people leave
-  if (topic === 'presence/home/leave') {
+  if (topic === 'presence/home/leave')
     say_helper("kitchen", `${message} just left`)
-  }
 
 })
 
 awsMqttClient.on('message', function (topic, message) {
   message = message_parser(message)
 
-  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
+  if (topic === '$aws/things/alarm_status/shadow/update/documents') {
     current_alarm_state = message.current.state.reported.state
     // alarm state has changed
     if (message.previous.state.reported.state !== message.current.state.reported.state) {
@@ -106,13 +105,11 @@ awsMqttClient.on('message', function (topic, message) {
     }
   }
 
-  if (topic = "$aws/things/alarm_zone_4/shadow/get/accepted" && message.previous.state.reported.troubles !== message.current.state.reported.troubles) {
+  if (topic = '$aws/things/alarm_zone_4/shadow/get/accepted' && message.previous.state.reported.troubles !== message.current.state.reported.troubles)
     say_helper("garage", `Alarm is currently ${current_alarm_state}`)
-  }
 
-  if (topic = "$aws/things/alarm_zone_4/shadow/get/accepted") {
-    conservatory_is_open = message.state.reported.troubles !== null
-  }
+  if (topic = '$aws/things/alarm_zone_4/shadow/get/accepted')
+    conservatory_is_open = message.current.state.reported.troubles ? true : false
 
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
@@ -170,9 +167,8 @@ awsMqttClient.on('message', function (topic, message) {
   }
 
   // zwave low battery alert
-  if (topic === "domoticz/out" && message.Battery && message.Battery < 15) {
+  if (topic === "domoticz/out" && message.Battery && message.Battery < 15)
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
-  }
 
 })
 
