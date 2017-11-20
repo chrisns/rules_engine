@@ -48,6 +48,7 @@ awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
 
 let current_alarm_state
 let conservatory_is_open
+let current_alarm_full_status
 
 client.on('message', function (topic, message) {
   message = message_parser(message)
@@ -92,6 +93,7 @@ awsMqttClient.on('message', function (topic, message) {
 
   if (topic === '$aws/things/alarm_status/shadow/update/documents') {
     current_alarm_state = message.current.state.reported.state
+    current_alarm_full_status = message.current.state.reported
     // alarm state has changed
     if (message.previous.state.reported.state !== message.current.state.reported.state) {
       console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
@@ -104,12 +106,14 @@ awsMqttClient.on('message', function (topic, message) {
       }
     }
   }
-
-  if (topic === '$aws/things/alarm_zone_7/shadow/update/documents' && message.previous.state.reported.troubles !== message.current.state.reported.troubles)
+  // current_alarm_full_status.ready_status === false
+  if (topic === '$aws/things/alarm_zone_7/shadow/update/documents' && is_alarm_device_open(message.previous.state.reported) !== is_alarm_device_open(message.current.state.reported)) {
+    console.log(JSON.stringify(message))
+    console.log("garage door state changed, announcing alarm status")
     say_helper("garage", `Alarm is currently ${current_alarm_state}`)
-
+  }
   if (topic === '$aws/things/alarm_zone_4/shadow/get/accepted')
-    conservatory_is_open = message.current.state.reported.troubles ? true : false
+    conservatory_is_open = is_alarm_device_open(message.current.state.reported)
 
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
@@ -171,6 +175,13 @@ awsMqttClient.on('message', function (topic, message) {
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
 
 })
+
+const is_alarm_device_open = device => {
+  if (current_alarm_full_status && current_alarm_full_status.ready_status === true) {
+    return false
+  }
+  return (device.troubles && device.troubles.includes("OPENED"))
+}
 
 const messages = {
   start: "/start",
