@@ -106,7 +106,6 @@ awsMqttClient.on('message', function (topic, message) {
       }
     }
   }
-  // current_alarm_full_status.ready_status === false
   if (topic === '$aws/things/alarm_zone_7/shadow/update/documents' && is_alarm_device_open(message.previous.state.reported) !== is_alarm_device_open(message.current.state.reported)) {
     console.log(JSON.stringify(message))
     console.log("garage door state changed, announcing alarm status")
@@ -126,11 +125,15 @@ awsMqttClient.on('message', function (topic, message) {
     if (message === messages.unlock_door.toLowerCase())
       domoticz_helper(3, "Off")
 
-    if (message === messages.arm_alarm_home.toLowerCase())
+    if (message === messages.arm_alarm_home.toLowerCase()) {
+      reply_with_alarm_status(t[0].toString())
       awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_home"}}}))
+    }
 
-    if (message === messages.arm_alarm_away.toLowerCase())
+    if (message === messages.arm_alarm_away.toLowerCase()) {
+      reply_with_alarm_status(t[0].toString())
       awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_away"}}}))
+    }
 
     if (message === messages.disarm_alarm.toLowerCase())
       awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "disarm"}}}))
@@ -175,6 +178,8 @@ awsMqttClient.on('message', function (topic, message) {
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
 
 })
+
+const reply_with_alarm_status = who => notify_helper(who, `Alarm is currently${current_alarm_full_status.ready_status ? " " : " not "}ready to arm`, null, true)
 
 const is_alarm_device_open = device => {
   if (current_alarm_full_status && current_alarm_full_status.ready_status === true) {
