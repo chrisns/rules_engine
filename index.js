@@ -73,7 +73,7 @@ client.on('message', function (topic, message) {
   // if people leave without setting an alarm
   if (topic === 'presence/home/leave' && current_alarm_state === "Disarm") {
     console.log(`${message} left with disarmed alarm`)
-    notify_helper(TL_MAP[message.toLowerCase()], "You have left home but not set the alarm", [messages.arm_alarm_away, messages.arm_alarm_home])
+    notify_helper(TL_MAP[message.toLowerCase()], "You have left home but not set the alarm")
   }
 
   // if people arrive and the alarm is disarmed let them know
@@ -124,6 +124,12 @@ awsMqttClient.on('message', function (topic, message) {
 
     if (message === messages.unlock_door.toLowerCase())
       domoticz_helper(3, "Off")
+
+    if (message === messages.doorbell_off.toLowerCase())
+      domoticz_helper(195, "Off")
+
+    if (message === messages.doorbell_on.toLowerCase())
+      domoticz_helper(195, "On")
 
     if (message === messages.arm_alarm_home.toLowerCase()) {
       reply_with_alarm_status(t[0].toString())
@@ -193,7 +199,9 @@ const messages = {
   unlock_door: "Unlock the door",
   arm_alarm_home: "Arm alarm home",
   arm_alarm_away: "Arm alarm away",
-  disarm_alarm: "Disarm alarm"
+  disarm_alarm: "Disarm alarm",
+  doorbell_off: "Doorbell off",
+  doorbell_on: "Doorbell on"
 }
 
 const TL_MAP = {
