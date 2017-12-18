@@ -3,6 +3,10 @@
 const mqttWildcard = require('mqtt-wildcard')
 const mqtt = require('mqtt')
 const _ = require('lodash')
+const AWS = require('aws-sdk')
+const request = require('request-promise-native')
+const s3 = new AWS.S3();
+const uuid = require('uuid/v4');
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, USER, PASS, MQTT, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 
@@ -12,7 +16,15 @@ const awsMqttClient = new AWSMqtt({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
   endpointAddress: AWS_IOT_ENDPOINT_HOST,
-  region: AWS_REGION
+  region: AWS_REGION,
+
+})
+
+const iotdata = new AWS.IotData({
+  endpoint: AWS_IOT_ENDPOINT_HOST,
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: AWS_REGION,
 })
 
 const client = mqtt.connect(MQTT, {
@@ -173,9 +185,20 @@ awsMqttClient.on('message', function (topic, message) {
         say_helper("garden", "Someone at the door")
       }
     }
-
-    //@todo send photo
-    notify_helper(GROUP_TELEGRAM_ID, "Someone at the door", [messages.unlock_door])
+    let inst_uuid = uuid();
+    iotdata.getThingShadow({thingName: "camera_external_driveway"}).promise()
+      .then(thing => JSON.parse(thing.payload).state.reported.jpg)
+      .then(camera_url => request({uri: camera_url, encoding: null}))
+      .then(body => s3.putObject({
+        Body: body,
+        Key: `${inst_uuid}.jpg`,
+        ContentType: "image/jpeg",
+        ACL: "public-read",
+        Bucket: 'me.cns.p.cams'
+      }).promise())
+      // .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
+      .then(() => notify_helper(GROUP_TELEGRAM_ID, `Someone at the door
+https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`, [messages.unlock_door]))
 
   }
 
