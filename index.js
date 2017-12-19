@@ -59,7 +59,6 @@ awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
 ))
 
 let current_alarm_state
-let conservatory_is_open
 let current_alarm_full_status
 
 client.on('message', function (topic, message) {
@@ -123,8 +122,6 @@ awsMqttClient.on('message', function (topic, message) {
     console.log("garage door state changed, announcing alarm status")
     say_helper("garage", `Alarm is currently ${current_alarm_state}`)
   }
-  if (topic === '$aws/things/alarm_zone_4/shadow/get/accepted')
-    conservatory_is_open = is_alarm_device_open(message.current.state.reported)
 
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
@@ -179,11 +176,7 @@ awsMqttClient.on('message', function (topic, message) {
         lights_helper("Desk", "muchbrighter")
       })
       say_helper("kitchen", "Someone at the door")
-      say_helper("conservatory", "Someone at the door")
       say_helper("desk", "Someone at the door")
-      if (conservatory_is_open === true) {
-        say_helper("garden", "Someone at the door")
-      }
     }
     let inst_uuid = uuid();
     iotdata.getThingShadow({thingName: "camera_external_driveway"}).promise()
