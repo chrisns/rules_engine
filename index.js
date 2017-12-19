@@ -5,8 +5,7 @@ const mqtt = require('mqtt')
 const _ = require('lodash')
 const AWS = require('aws-sdk')
 const request = require('request-promise-native')
-const s3 = new AWS.S3();
-const uuid = require('uuid/v4');
+const uuid = require('uuid/v4')
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, USER, PASS, MQTT, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 
@@ -25,6 +24,12 @@ const iotdata = new AWS.IotData({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
   region: AWS_REGION,
+})
+
+const s3 = new AWS.S3({
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: AWS_REGION
 })
 
 const client = mqtt.connect(MQTT, {
@@ -171,14 +176,16 @@ awsMqttClient.on('message', function (topic, message) {
 
     if (current_alarm_state !== "Away") {
       _.times(4, () => domoticz_helper(79, "Toggle"))
-      _.times(4, () => {
-        lights_helper("Desk", "muchdimmer")
-        lights_helper("Desk", "muchbrighter")
-      })
+      // _.times(4, () => {
+      //   lights_helper("Desk", "muchdimmer")
+      //   lights_helper("Desk", "muchbrighter")
+      // })
       say_helper("kitchen", "Someone at the door")
-      say_helper("desk", "Someone at the door")
     }
-    let inst_uuid = uuid();
+
+    notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
+
+    let inst_uuid = uuid()
     iotdata.getThingShadow({thingName: "camera_external_driveway"}).promise()
       .then(thing => JSON.parse(thing.payload).state.reported.jpg)
       .then(camera_url => request({uri: camera_url, encoding: null}))
@@ -190,8 +197,7 @@ awsMqttClient.on('message', function (topic, message) {
         Bucket: 'me.cns.p.cams'
       }).promise())
       // .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
-      .then(() => notify_helper(GROUP_TELEGRAM_ID, `Someone at the door
-https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`, [messages.unlock_door]))
+      .then(() => notify_helper(GROUP_TELEGRAM_ID, `https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`, [messages.unlock_door], true))
 
   }
 
@@ -270,9 +276,9 @@ function unclean_exit() {
 }
 
 process.stdin.resume()
-process.on('exit', clean_exit);
-process.on('SIGINT', clean_exit);
-process.on('unclean_exit', clean_exit);
+process.on('exit', clean_exit)
+process.on('SIGINT', clean_exit)
+process.on('unclean_exit', clean_exit)
 
 client.on('connect', () => console.log("mqtt connected"))
 client.on('error', (error) => console.error("mqtt", error))
