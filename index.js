@@ -163,8 +163,15 @@ awsMqttClient.on('message', function (topic, message) {
       say_helper(split_message[1], split_message[2])
     }
 
-    if (message === messages.start)
+    if (message === messages.start.toLowerCase())
       notify_helper(t[0], `You can do these things`, messages)
+
+    if (message === messages.cam_driveway.toLowerCase())
+      send_camera_to('camera_external_driveway', t[0])
+
+    if (message === messages.cam_garden.toLowerCase())
+      send_camera_to('camera_external_garden', t[0])
+
   }
 
   if (topic === "domoticz/out")
@@ -176,28 +183,12 @@ awsMqttClient.on('message', function (topic, message) {
 
     if (current_alarm_state !== "Away") {
       _.times(4, () => domoticz_helper(79, "Toggle"))
-      // _.times(4, () => {
-      //   lights_helper("Desk", "muchdimmer")
-      //   lights_helper("Desk", "muchbrighter")
-      // })
       say_helper("kitchen", "Someone at the door")
     }
 
     notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
 
-    let inst_uuid = uuid()
-    iotdata.getThingShadow({thingName: "camera_external_driveway"}).promise()
-      .then(thing => JSON.parse(thing.payload).state.reported.jpg)
-      .then(camera_url => request({uri: camera_url, encoding: null}))
-      .then(body => s3.putObject({
-        Body: body,
-        Key: `${inst_uuid}.jpg`,
-        ContentType: "image/jpeg",
-        ACL: "public-read",
-        Bucket: 'me.cns.p.cams'
-      }).promise())
-      // .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
-      .then(() => notify_helper(GROUP_TELEGRAM_ID, `https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`, [messages.unlock_door], true))
+    send_camera_to('camera_external_driveway', GROUP_TELEGRAM_ID)
 
   }
 
@@ -206,6 +197,24 @@ awsMqttClient.on('message', function (topic, message) {
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
 
 })
+
+const send_camera_to = (camera, who) => {
+  console.log("fff")
+  let inst_uuid = uuid()
+  return iotdata.getThingShadow({thingName: camera}).promise()
+    .then(thing => JSON.parse(thing.payload).state.reported.jpg)
+
+    .then(camera_url => request({uri: camera_url, encoding: null}))
+    .then(body => s3.putObject({
+      Body: body,
+      Key: `${inst_uuid}.jpg`,
+      ContentType: "image/jpeg",
+      ACL: "public-read",
+      Bucket: 'me.cns.p.cams'
+    }).promise())
+    // .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
+    .then(() => notify_helper(who, null, null, true, `https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`))
+}
 
 const reply_with_alarm_status = who => notify_helper(who, `Alarm is currently${current_alarm_full_status.ready_status ? " " : " not "}ready to arm`, null, true)
 
@@ -223,7 +232,9 @@ const messages = {
   arm_alarm_away: "Arm alarm away",
   disarm_alarm: "Disarm alarm",
   doorbell_off: "Doorbell off",
-  doorbell_on: "Doorbell on"
+  doorbell_on: "Doorbell on",
+  cam_driveway: "Get driveway camera",
+  cam_garden: "Get garden camera"
 }
 
 const TL_MAP = {
@@ -242,10 +253,11 @@ const message_parser = message => {
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
-const notify_helper = (who, message, actions, disableNotification) =>
+const notify_helper = (who, message, actions = null, disableNotification = false, image = null) =>
   awsMqttClient.publish(`notify/in/${who}`, JSON.stringify({
     disableNotification: disableNotification,
     message: message,
+    image: image,
     buttons: actions ? _.map(actions, action => {
       return {title: action, value: action}
     }) : null
