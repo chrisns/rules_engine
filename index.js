@@ -1,13 +1,12 @@
 /*eslint no-console: "off"*/
 
 const mqttWildcard = require('mqtt-wildcard')
-const mqtt = require('mqtt')
 const _ = require('lodash')
 const AWS = require('aws-sdk')
 const request = require('request-promise-native')
 const uuid = require('uuid/v4')
 
-const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, USER, PASS, MQTT, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 
 const AWSMqtt = require("aws-mqtt-client").default
 
@@ -16,7 +15,7 @@ const awsMqttClient = new AWSMqtt({
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
   endpointAddress: AWS_IOT_ENDPOINT_HOST,
   region: AWS_REGION,
-
+  logger: console
 })
 
 const iotdata = new AWS.IotData({
@@ -24,39 +23,25 @@ const iotdata = new AWS.IotData({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
   region: AWS_REGION,
+  logger: console
+
 })
 
 const s3 = new AWS.S3({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  region: AWS_REGION
+  region: AWS_REGION,
 })
-
-const client = mqtt.connect(MQTT, {
-  username: USER,
-  password: PASS,
-  clean: false,
-  clientId: `rules_engine`
-})
-
-const topics = [
-  "owntracks/+/+/event",
-  "presence/home/+"
-]
 
 const awsTopics = [
   "domoticz/out",
+  "owntracks/+/+/event",
   '$aws/things/alarm_status/shadow/update/documents',
   '$aws/things/alarm_zone_7/shadow/update/documents',
   '$aws/things/alarm_zone_4/shadow/get/accepted',
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
-
-client.on('connect', () => client.subscribe(topics,
-  {qos: 2},
-  (err, granted) => console.log("mqtt", err, granted)
-))
 
 awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
   {qos: 1},
@@ -66,46 +51,51 @@ awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
 let current_alarm_state
 let current_alarm_full_status
 
-client.on('message', function (topic, message) {
-  message = message_parser(message)
+const get_alarm_state = () => iotdata.getThingShadow({thingName: "alarm_status"}).promise()
+  .then(thing => JSON.parse(thing.payload).state.reported.state)
 
-  let t
-  if ((t = mqttWildcard(topic, 'owntracks/+/+/event')) && t !== null) {
-    let device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
-    if (message._type === "transition" && message.desc === "Home" && device_map[t[1]]) {
-      client.publish(`presence/${message.desc.toLowerCase()}/${device_map[t[1]]}`, message.event === "enter" ? "true" : "false", {retain: true})
-      client.publish(`presence/${message.desc.toLowerCase()}/${message.event}`, device_map[t[1]])
-    }
-  }
+const get_alarm_ready_status = () => iotdata.getThingShadow({thingName: "alarm_status"}).promise()
+  .then(thing => JSON.parse(thing.payload).state.reported.ready_status)
 
-  // someone just got home
-  if (topic === 'presence/home/enter') {
-    console.log(`${message} just got home`)
-    say_helper("kitchen", `${message} just arrived`)
-    notify_helper(TL_MAP[message.toLowerCase()], "You just got back, I've tried to disarm the alarm, you should get another message to confirm this has been successful")
-    awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "disarm"}}}))
-  }
-
-  // if people leave without setting an alarm
-  if (topic === 'presence/home/leave' && current_alarm_state === "Disarm") {
-    console.log(`${message} left with disarmed alarm`)
-    notify_helper(TL_MAP[message.toLowerCase()], "You have left home but not set the alarm")
-  }
-
-  // if people arrive and the alarm is disarmed let them know
-  if (topic === 'presence/home/arrive' && current_alarm_state === "Disarm") {
-    console.log(`${message} arrived to a disarmed alarm`)
-    notify_helper(TL_MAP[message.toLowerCase()], "You have arrived home the alarm is NOT armed")
-  }
-
-  // if people leave
-  if (topic === 'presence/home/leave')
-    say_helper("kitchen", `${message} just left`)
-
-})
+const set_alarm_state = state => iotdata.updateThingShadow({
+  thingName: "alarm_status",
+  payload: JSON.stringify({state: {desired: {state: state}}})
+}, (err, data) => console.log(err, data))
 
 awsMqttClient.on('message', function (topic, message) {
   message = message_parser(message)
+
+  if (mqttWildcard(topic, 'owntracks/+/+/event') !== null) {
+    const t = mqttWildcard(topic, 'owntracks/+/+/event')
+    const device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
+    const announce_map = {cnsiphone: "Daddy", hnsiphone: "Mummy"}
+    say_helper("kitchen", `${announce_map[t[1]]} is home`)
+    // say_helper("garage", `${announce_map[t[1]]} is home`)
+    if (message._type === "transition" && message.desc === "Home" && device_map[t[1]]) {
+      if (message.event === "enter") {
+        get_alarm_state()
+          .then(state => {
+            if (state === "Disarm") {
+              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], "You just got home, alarm is DISARMED")
+              domoticz_helper(3, "Off")
+            }
+            else {
+              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just got home, alarm is ${state}, attempting to disarm`)
+              set_alarm_state("disarm")
+            }
+          })
+      }
+      if (message.event === "leave") {
+        say_helper("kitchen", `${device_map[t[1]]} just left`)
+        say_helper("garage", `${device_map[t[1]]} just left`)
+        get_alarm_state()
+          .then(state => {
+            if (state === "Disarm")
+              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just without setting the alarm`)
+          })
+      }
+    }
+  }
 
   if (topic === '$aws/things/alarm_status/shadow/update/documents') {
     current_alarm_state = message.current.state.reported.state
@@ -147,16 +137,16 @@ awsMqttClient.on('message', function (topic, message) {
 
     if (message === messages.arm_alarm_home.toLowerCase()) {
       reply_with_alarm_status(t[0].toString())
-      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_home"}}}))
+      set_alarm_state("arm_home")
     }
 
     if (message === messages.arm_alarm_away.toLowerCase()) {
       reply_with_alarm_status(t[0].toString())
-      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "arm_away"}}}))
+      set_alarm_state("arm_away")
     }
 
     if (message === messages.disarm_alarm.toLowerCase())
-      awsMqttClient.publish(`$aws/things/alarm_status/shadow/update`, JSON.stringify({state: {desired: {state: "disarm"}}}))
+      set_alarm_state("disarm")
 
     if (message.startsWith("say")) {
       let split_message = /say\s(\w+)(.*)/gi.exec(message)
@@ -174,8 +164,8 @@ awsMqttClient.on('message', function (topic, message) {
 
   }
 
-  if (topic === "domoticz/out")
-    client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
+  // if (topic === "domoticz/out")
+  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
 
   // someone at the door
   if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
@@ -199,7 +189,6 @@ awsMqttClient.on('message', function (topic, message) {
 })
 
 const send_camera_to = (camera, who) => {
-  console.log("fff")
   let inst_uuid = uuid()
   return iotdata.getThingShadow({thingName: camera}).promise()
     .then(thing => JSON.parse(thing.payload).state.reported.jpg)
@@ -209,14 +198,13 @@ const send_camera_to = (camera, who) => {
       Body: body,
       Key: `${inst_uuid}.jpg`,
       ContentType: "image/jpeg",
-      ACL: "public-read",
       Bucket: 'me.cns.p.cams'
     }).promise())
-    // .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
-    .then(() => notify_helper(who, null, null, true, `https://s3.eu-west-2.amazonaws.com/me.cns.p.cams/${inst_uuid}.jpg`))
+    .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
+    .then(signedurl => notify_helper(who, null, null, true, signedurl))
 }
 
-const reply_with_alarm_status = who => notify_helper(who, `Alarm is currently${current_alarm_full_status.ready_status ? " " : " not "}ready to arm`, null, true)
+const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
 
 const is_alarm_device_open = device => {
   if (current_alarm_full_status && current_alarm_full_status.ready_status === true) {
@@ -273,29 +261,7 @@ const domoticz_helper = (idx, state) =>
 const say_helper = (where, what) =>
   awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
-const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
-
-function clean_exit() {
-  console.log("Closing connection (clean)")
-  client.end(false, () =>
-    process.exit(0))
-}
-
-function unclean_exit() {
-  console.log("Closing connection (unclean)")
-  client.end(false, () =>
-    process.exit(1))
-}
-
-process.stdin.resume()
-process.on('exit', clean_exit)
-process.on('SIGINT', clean_exit)
-process.on('unclean_exit', clean_exit)
-
-client.on('connect', () => console.log("mqtt connected"))
-client.on('error', (error) => console.error("mqtt", error))
-client.on('close', () => console.error("mqtt connection close"))
-client.on('offline', () => console.log("mqtt offline"))
+const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 5
 
 awsMqttClient.on('connect', () => console.log("aws connected"))
 awsMqttClient.on('error', (error) => console.error("aws", error))
