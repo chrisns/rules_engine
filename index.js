@@ -150,6 +150,10 @@ awsMqttClient.on('message', function (topic, message) {
     if (message === messages.cam_garden.toLowerCase())
       send_camera_to('camera_external_garden', t[0])
 
+    if (message === messages.get_alarm_status.toLowerCase())
+      get_alarm_state()
+        .then(state => notify_helper(t[0], state))
+
   }
 
   // someone at the door
@@ -204,9 +208,10 @@ const is_alarm_device_open = device => {
 const messages = {
   start: "/start",
   unlock_door: "Unlock the door",
+  disarm_alarm: "Disarm alarm",
   arm_alarm_home: "Arm alarm home",
   arm_alarm_away: "Arm alarm away",
-  disarm_alarm: "Disarm alarm",
+  get_alarm_status: "Get alarm status",
   doorbell_off: "Doorbell off",
   doorbell_on: "Doorbell on",
   cam_driveway: "Get driveway camera",
