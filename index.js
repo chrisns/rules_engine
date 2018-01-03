@@ -170,11 +170,14 @@ awsMqttClient.on('message', function (topic, message) {
   // someone at the door
   if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
     console.log("door bell!")
-
-    if (current_alarm_state !== "Away") {
-      _.times(4, () => domoticz_helper(79, "Toggle"))
-      say_helper("kitchen", "Someone at the door")
-    }
+    get_alarm_state()
+      .then(state => {
+        if (state !== "Away") {
+          _.times(4, () => domoticz_helper(79, "Toggle"))
+          say_helper("kitchen", "Someone at the door")
+          say_helper("garage", "Someone at the door")
+        }
+      })
 
     notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
 
@@ -261,7 +264,7 @@ const domoticz_helper = (idx, state) =>
 const say_helper = (where, what) =>
   awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
-const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 5
+const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
 awsMqttClient.on('connect', () => console.log("aws connected"))
 awsMqttClient.on('error', (error) => console.error("aws", error))
