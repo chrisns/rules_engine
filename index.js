@@ -37,8 +37,6 @@ const awsTopics = [
   "domoticz/out",
   "owntracks/+/+/event",
   '$aws/things/alarm_status/shadow/update/documents',
-  '$aws/things/alarm_zone_7/shadow/update/documents',
-  '$aws/things/alarm_zone_4/shadow/get/accepted',
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -47,9 +45,6 @@ awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
   {qos: 1},
   (err, granted) => console.log("aws", err, granted)
 ))
-
-let current_alarm_state
-let current_alarm_full_status
 
 const get_alarm_state = () => iotdata.getThingShadow({thingName: "alarm_status"}).promise()
   .then(thing => JSON.parse(thing.payload).state.reported.state)
@@ -98,8 +93,6 @@ awsMqttClient.on('message', function (topic, message) {
   }
 
   if (topic === '$aws/things/alarm_status/shadow/update/documents') {
-    current_alarm_state = message.current.state.reported.state
-    current_alarm_full_status = message.current.state.reported
     // alarm state has changed
     if (message.previous.state.reported.state !== message.current.state.reported.state) {
       console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
@@ -111,11 +104,6 @@ awsMqttClient.on('message', function (topic, message) {
         domoticz_helper(51, "On")
       }
     }
-  }
-  if (topic === '$aws/things/alarm_zone_7/shadow/update/documents' && is_alarm_device_open(message.previous.state.reported) !== is_alarm_device_open(message.current.state.reported)) {
-    console.log(JSON.stringify(message))
-    console.log("garage door state changed, announcing alarm status")
-    say_helper("garage", `Alarm is currently ${current_alarm_state}`)
   }
 
   // react to chatbot commands
@@ -163,9 +151,6 @@ awsMqttClient.on('message', function (topic, message) {
       send_camera_to('camera_external_garden', t[0])
 
   }
-
-  // if (topic === "domoticz/out")
-  //   client.publish(`zwave/${message.stype.toLowerCase()}/${message.idx}`, JSON.stringify(message), {retain: true})
 
   // someone at the door
   if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
