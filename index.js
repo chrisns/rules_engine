@@ -64,10 +64,10 @@ awsMqttClient.on('message', function (topic, message) {
     const t = mqttWildcard(topic, 'owntracks/+/+/event')
     const device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
     const announce_map = {cnsiphone: "Daddy", hnsiphone: "Mummy"}
-    say_helper("kitchen", `${announce_map[t[1]]} is home`)
     // say_helper("garage", `${announce_map[t[1]]} is home`)
     if (message._type === "transition" && message.desc === "Home" && device_map[t[1]]) {
       if (message.event === "enter") {
+        say_helper("kitchen", `${announce_map[t[1]]} is home`)
         get_alarm_state()
           .then(state => {
             if (state === "Disarm") {
@@ -109,7 +109,7 @@ awsMqttClient.on('message', function (topic, message) {
   // react to chatbot commands
   if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
     // send acknowledgement back to user
-    notify_helper(t[0].toString(), "ACK", null, true)
+    // notify_helper(t[0].toString(), "ACK", null, true)
 
     message = message.toLowerCase()
     console.log(`Telegram user ${t[0]} just sent:"${message}"`)
