@@ -1,10 +1,10 @@
 /*eslint no-console: "off"*/
 
-const mqttWildcard = require('mqtt-wildcard')
-const _ = require('lodash')
-const AWS = require('aws-sdk')
-const request = require('request-promise-native')
-const uuid = require('uuid/v4')
+const mqttWildcard = require("mqtt-wildcard")
+const _ = require("lodash")
+const AWS = require("aws-sdk")
+const request = require("request-promise-native")
+const uuid = require("uuid/v4")
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 
@@ -36,12 +36,12 @@ const s3 = new AWS.S3({
 const awsTopics = [
   "domoticz/out",
   "owntracks/+/+/event",
-  '$aws/things/alarm_status/shadow/update/documents',
+  "$aws/things/alarm_status/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
 
-awsMqttClient.on('connect', () => awsMqttClient.subscribe(awsTopics,
+awsMqttClient.on("connect", () => awsMqttClient.subscribe(awsTopics,
   {qos: 1},
   (err, granted) => console.log("aws", err, granted)
 ))
@@ -57,11 +57,11 @@ const set_alarm_state = state => iotdata.updateThingShadow({
   payload: JSON.stringify({state: {desired: {state: state}}})
 }, (err, data) => console.log(err, data))
 
-awsMqttClient.on('message', function (topic, message) {
+awsMqttClient.on("message", function (topic, message) {
   message = message_parser(message)
 
-  if (mqttWildcard(topic, 'owntracks/+/+/event') !== null) {
-    const t = mqttWildcard(topic, 'owntracks/+/+/event')
+  if (mqttWildcard(topic, "owntracks/+/+/event") !== null) {
+    const t = mqttWildcard(topic, "owntracks/+/+/event")
     const device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
     const announce_map = {cnsiphone: "Daddy", hnsiphone: "Mummy"}
     // say_helper("garage", `${announce_map[t[1]]} is home`)
@@ -92,7 +92,7 @@ awsMqttClient.on('message', function (topic, message) {
     }
   }
 
-  if (topic === '$aws/things/alarm_status/shadow/update/documents') {
+  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
     // alarm state has changed
     if (message.previous.state.reported.state !== message.current.state.reported.state) {
       console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
@@ -107,7 +107,7 @@ awsMqttClient.on('message', function (topic, message) {
   }
 
   // react to chatbot commands
-  if ((t = mqttWildcard(topic, 'notify/out/+')) && t !== null) {
+  if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
     // send acknowledgement back to user
     // notify_helper(t[0].toString(), "ACK", null, true)
 
@@ -115,7 +115,10 @@ awsMqttClient.on('message', function (topic, message) {
     console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
     if (message === messages.unlock_door.toLowerCase())
-      domoticz_helper(3, "Off")
+      iotdata.updateThingShadow({
+        thingName: "zwave_d5264b94_26",
+        payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
+      })
 
     if (message === messages.doorbell_off.toLowerCase())
       domoticz_helper(195, "Off")
@@ -145,10 +148,10 @@ awsMqttClient.on('message', function (topic, message) {
       notify_helper(t[0], `You can do these things`, messages)
 
     if (message === messages.cam_driveway.toLowerCase())
-      send_camera_to('camera_external_driveway', t[0])
+      send_camera_to("camera_external_driveway", t[0])
 
     if (message === messages.cam_garden.toLowerCase())
-      send_camera_to('camera_external_garden', t[0])
+      send_camera_to("camera_external_garden", t[0])
 
     if (message === messages.get_alarm_status.toLowerCase())
       get_alarm_state()
@@ -170,7 +173,7 @@ awsMqttClient.on('message', function (topic, message) {
 
     notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
 
-    send_camera_to('camera_external_driveway', GROUP_TELEGRAM_ID)
+    send_camera_to("camera_external_driveway", GROUP_TELEGRAM_ID)
 
   }
 
@@ -190,9 +193,9 @@ const send_camera_to = (camera, who) => {
       Body: body,
       Key: `${inst_uuid}.jpg`,
       ContentType: "image/jpeg",
-      Bucket: 'me.cns.p.cams'
+      Bucket: "me.cns.p.cams"
     }).promise())
-    .then(() => s3.getSignedUrl('getObject', {Bucket: 'me.cns.p.cams', Key: `${inst_uuid}.jpg`}))
+    .then(() => s3.getSignedUrl("getObject", {Bucket: "me.cns.p.cams", Key: `${inst_uuid}.jpg`}))
     .then(signedurl => notify_helper(who, null, null, true, signedurl))
 }
 
@@ -245,7 +248,7 @@ const notify_helper = (who, message, actions = null, disableNotification = false
   }))
 
 const domoticz_helper = (idx, state) =>
-  awsMqttClient.publish('domoticz/in', JSON.stringify({
+  awsMqttClient.publish("domoticz/in", JSON.stringify({
     command: "switchlight",
     idx: idx,
     switchcmd: state
@@ -256,7 +259,7 @@ const say_helper = (where, what) =>
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
-awsMqttClient.on('connect', () => console.log("aws connected"))
-awsMqttClient.on('error', (error) => console.error("aws", error))
-awsMqttClient.on('close', () => console.error("aws connection close"))
-awsMqttClient.on('offline', () => console.log("aws offline"))
+awsMqttClient.on("connect", () => console.log("aws connected"))
+awsMqttClient.on("error", (error) => console.error("aws", error))
+awsMqttClient.on("close", () => console.error("aws connection close"))
+awsMqttClient.on("offline", () => console.log("aws offline"))
