@@ -118,7 +118,7 @@ awsMqttClient.on("message", function (topic, message) {
       iotdata.updateThingShadow({
         thingName: "zwave_d5264b94_26",
         payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
-      })
+      }, (err, data) => console.log(err, data))
 
     if (message === messages.doorbell_off.toLowerCase())
       domoticz_helper(195, "Off")
