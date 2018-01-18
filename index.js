@@ -157,6 +157,30 @@ awsMqttClient.on("message", function (topic, message) {
       get_alarm_state()
         .then(state => notify_helper(t[0], state))
 
+    // zwave
+    if (message === messages.zwave.toLowerCase())
+      notify_helper(t[0], `You can do these zwave things`, zwave_messages)
+
+    if (message === zwave_messages.zwave_secureadd.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {secureAddNode: random_number()})
+
+    if (message === zwave_messages.zwave_add.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {addNode: random_number()})
+
+    if (message === zwave_messages.zwave_cancel.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {cancelControllerCommand: random_number()})
+
+    if (message === zwave_messages.zwave_remove.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {removeNode: random_number()})
+
+    if (message === zwave_messages.zwave_heal.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {healNetwork: random_number()})
+
+    if (message === zwave_messages.zwave_reset.toLowerCase())
+      zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
+
+    if (message === zwave_messages.zwave_follow.toLowerCase())
+      notify_helper(t[0], `not yet implemented`)
   }
 
   // someone at the door
@@ -182,6 +206,8 @@ awsMqttClient.on("message", function (topic, message) {
     notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
 
 })
+
+const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
 const send_camera_to = (camera, who) => {
   let inst_uuid = uuid()
@@ -218,7 +244,19 @@ const messages = {
   doorbell_off: "Doorbell off",
   doorbell_on: "Doorbell on",
   cam_driveway: "Get driveway camera",
-  cam_garden: "Get garden camera"
+  cam_garden: "Get garden camera",
+  zwave: "Z-wave management"
+}
+
+const zwave_messages = {
+  start: "/start",
+  zwave_secureadd: "Securely add device",
+  zwave_add: "Insecurely add device",
+  zwave_cancel: "Cancel controller command",
+  zwave_remove: "Remove device",
+  zwave_heal: "Heal network",
+  zwave_reset: "Soft reset controller",
+  zwave_follow: "Follow events for 5 minutes"
 }
 
 const TL_MAP = {
@@ -234,6 +272,11 @@ const message_parser = message => {
     return message.toString()
   }
 }
+
+const zwave_helper = (thing, state) => iotdata.updateThingShadow({
+  thingName: thing,
+  payload: JSON.stringify({state: {desired: state}})
+},).promise()
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
