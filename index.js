@@ -120,7 +120,7 @@ awsMqttClient.on("message", function (topic, message) {
 
     if (message === messages.unlock_door.toLowerCase())
       iotdata.updateThingShadow({
-        thingName: "zwave_d5264b94_26",
+        thingName: "zwave_f2e55e6c_4",
         payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
       }, (err, data) => console.log(err, data))
 
