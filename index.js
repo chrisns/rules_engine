@@ -184,7 +184,9 @@ awsMqttClient.on("message", function (topic, message) {
       zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
 
     if (message === zwave_messages.zwave_follow.toLowerCase()) {
-      awsMqttClient.subscribe("zwave/log")
+      awsMqttClient.subscribe("zwave/log", {qos: 1},
+        (err, granted) => console.log("aws", err, granted)
+      )
       setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
     }
   }
