@@ -106,6 +106,10 @@ awsMqttClient.on("message", function (topic, message) {
     }
   }
 
+  //zwave log
+  if (topic === "zwave/log")
+    notify_helper(CHRIS_TELEGRAM_ID, `zwave ${message.homeid} ${JSON.stringify(message.log)}`)
+
   // react to chatbot commands
   if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
     // send acknowledgement back to user
@@ -179,8 +183,10 @@ awsMqttClient.on("message", function (topic, message) {
     if (message === zwave_messages.zwave_reset.toLowerCase())
       zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
 
-    if (message === zwave_messages.zwave_follow.toLowerCase())
-      notify_helper(t[0], `not yet implemented`)
+    if (message === zwave_messages.zwave_follow.toLowerCase()) {
+      awsMqttClient.subscribe("zwave/log")
+      setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
+    }
   }
 
   // someone at the door
