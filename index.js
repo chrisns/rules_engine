@@ -34,9 +34,9 @@ const s3 = new AWS.S3({
 })
 
 const awsTopics = [
-  "domoticz/out",
   "owntracks/+/+/event",
   "$aws/things/alarm_status/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_10/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -72,7 +72,6 @@ awsMqttClient.on("message", function (topic, message) {
           .then(state => {
             if (state === "Disarm") {
               notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], "You just got home, alarm is DISARMED")
-              domoticz_helper(3, "Off")
             }
             else {
               notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just got home, alarm is ${state}, attempting to disarm`)
@@ -100,8 +99,6 @@ awsMqttClient.on("message", function (topic, message) {
 
       if (message.current.state.reported.state === "Disarm") {
         say_helper("kitchen", `Alarm is now disarmed`)
-        domoticz_helper(3, "Off")
-        domoticz_helper(51, "On")
       }
     }
   }
@@ -123,12 +120,6 @@ awsMqttClient.on("message", function (topic, message) {
         thingName: "zwave_f2e55e6c_4",
         payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
       }, (err, data) => console.log(err, data))
-
-    if (message === messages.doorbell_off.toLowerCase())
-      domoticz_helper(195, "Off")
-
-    if (message === messages.doorbell_on.toLowerCase())
-      domoticz_helper(195, "On")
 
     if (message === messages.arm_alarm_home.toLowerCase()) {
       reply_with_alarm_status(t[0].toString())
@@ -192,12 +183,11 @@ awsMqttClient.on("message", function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "domoticz/out" && message.stype === "Switch" && message.idx === 155 && message.nvalue === 1) {
+  if (topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" && message.current.state.reported.basic.Basic === 0) {
     console.log("door bell!")
     get_alarm_state()
       .then(state => {
         if (state !== "Away") {
-          _.times(4, () => domoticz_helper(79, "Toggle"))
           say_helper("kitchen", "Someone at the door")
           say_helper("garage", "Someone at the door")
         }
@@ -208,10 +198,6 @@ awsMqttClient.on("message", function (topic, message) {
     send_camera_to("camera_external_driveway", GROUP_TELEGRAM_ID)
 
   }
-
-  // zwave low battery alert
-  if (topic === "domoticz/out" && message.Battery && message.Battery < 15)
-    notify_helper(CHRIS_TELEGRAM_ID, `zwave device ${message.idx} ${message.name} is low on battery`)
 
 })
 
@@ -297,13 +283,6 @@ const notify_helper = (who, message, actions = null, disableNotification = false
       return {title: action, value: action}
     }) : null
   }))
-
-const domoticz_helper = (idx, state) =>
-  awsMqttClient.publish("domoticz/in", JSON.stringify({
-    command: "switchlight",
-    idx: idx,
-    switchcmd: state
-  }), {qos: 0})
 
 const say_helper = (where, what) =>
   awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
