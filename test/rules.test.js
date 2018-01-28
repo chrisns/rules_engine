@@ -1,90 +1,85 @@
-const Gherkin = require("gherkin")
-const EventEmitter = require("events")
+const rewire = require("rewire")
+const rules = rewire("../rules")
+const chai = require("chai")
+const sinon = require("sinon")
+chai.use(require("sinon-chai"))
+const expect = chai.expect
 
-class MyEmitter extends EventEmitter {}
-
-const myEmitter = new MyEmitter()
-
-const {CucumberExpression, ParameterTypeRegistry,} = require("cucumber-expressions")
-const parameterTypeRegistry = new ParameterTypeRegistry()
-
-const parser = new Gherkin.Parser()
-
-const gherkindoc = `Feature: Simple maths
+const validGherkinDoc = `Feature: Simple maths
   Scenario: Front door open
     Given The "front door" is opened
     And The alarm is "disarmed"
     Then The "Kitchen" speaker should say "door open"
 `
 
-const gherkinDocument = parser.parse(gherkindoc)
-const pickles = new Gherkin.Compiler().compile(gherkinDocument)
-
-const functions = [
-  {
-    match: new CucumberExpression("The {string} is opened", parameterTypeRegistry),
-    func: (vars, event) => {
-      console.log("f", vars, event)
-      return true
-    }
-  },
-  {
-    match: new CucumberExpression("The alarm is {string}", parameterTypeRegistry),
-    func: (vars, context) => {
-      console.log("foo", vars, context)
-    }
-  },
-]
-
-const rules_add = (match, func) => functions.push({
-  match: new CucumberExpression(match, parameterTypeRegistry),
-  func: func
-})
-
-rules_add("The {string} speaker should say {string}", (vars, event) => {
-  console.log("f", vars, event)
-})
-
-const picked = pickles.map(scenario => {
-    scenario.steps.forEach(step => {
-        functions.some(func => {
-          const result = func.match.match(step.text)
-          if (result) {
-            return step.func = (event) => func.func(...result.map(v => v.getValue(null)), event)
-          }
-        })
-        if (!step.func)
-          throw `No defined step for ${step.text}`
-      }
-    )
-    scenario.entry = (event) => {
-
-    }
-    return scenario
-  }
-)
-
-const event = {
-  topic: "say/foo",
-  message: "aaaa"
+const addRules = () => {
+  rules.rulesAdd("The {string} is opened", console.log)
+  rules.rulesAdd("The alarm is {string}", console.log)
+  rules.rulesAdd("The {string} speaker should say {string}", console.log)
 }
-
-const event_handler = (event) => {
-  pickles.forEach(pickle => {
-    pickle.steps[0].func(event)
-
-  })
-}
-
-event_handler(event)
-/*
- Process:
- Given always sets up an event listener, everything else is an async event
- If a step returns FALSE, subsequent ones are not followed
- */
 
 describe("rules engine", () => {
-  it("can pickle the cucumber", () => {
+  beforeEach(() => {
+    rules.__set__("functions", [])
+  })
 
+  describe("makePickles", () => {
+    const pickles = rules.__get__("makePickles")(validGherkinDoc)
+    it("produce parse the gherkin and get the first step text", () =>
+      expect(pickles[0].steps[0].text).to.eql("The \"front door\" is opened")
+    )
+  })
+
+  describe("rulesAdd", () => {
+    beforeEach(() => {
+      rules.rulesAdd("The alarm is {string}", "mymethod")
+    })
+    it("should add a method to the functions db", () =>
+      expect(rules.__get__("functions")[0].func).to.eql("mymethod")
+    )
+    it("should add generate regex of the match", () =>
+      expect(rules.__get__("functions")[0].match._treeRegexp._re).to.eql(/^The alarm is ("([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)')$/)
+    )
+  })
+
+  describe("pickleGherkinWithMethods", () => {
+
+    describe("undefined functions", () => {
+      const pickles = rules.__get__("makePickles")(validGherkinDoc)
+      it("should throw an exception trying to pickle without having a matching function", () =>
+        expect(() => rules.__get__("pickleGherkinWithMethods")(pickles)).to.throw("No defined step for The \"front door\" is opened")
+      )
+    })
+
+    describe("fully defined functions", () => {
+      const pickles = rules.__get__("makePickles")(validGherkinDoc)
+      addRules()
+      const pickledmethods = rules.__get__("pickleGherkinWithMethods")(pickles)
+      it("should add a mapped function to the pickled scenarios", () =>
+        expect(pickledmethods[0].steps[0].func).to.be.a("function")
+      )
+    })
+  })
+
+  describe("eventHandler", () => {
+    const event = {
+      topic: "some/thing",
+      message: "somepayload"
+    }
+    it("should trigger the first handler")
+    describe("trigger the first handler", () => {
+      rules.eventHandler(event)
+      it("should call the first", () =>
+        expect("f").to.have.been.calledWith("ff"))
+    })
   })
 })
+
+
+/*
+@TODO
+should handle steps returning a promise
+if a step returns false (or eventually returns false) then don't proceed further
+if a step returns truthy (or eventually truthy) then pass event on to the next step
+
+ */
