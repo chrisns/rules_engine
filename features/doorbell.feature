@@ -5,7 +5,6 @@ Feature: Doorbell
     Then a screengrab of the "Driveway camera" is sent to "everyone"
     And a message reading "someone at the door" is sent to "everyone" with a button to "Unlock the door"
 
-
   Scenario: Someone rings the doorbell
     Given the "doorbell" button is "pressed"
     When the alarm is not "Away"

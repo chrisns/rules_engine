@@ -63,37 +63,6 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 awsMqttClient.on("message", function (topic, message) {
   message = message_parser(message)
 
-  if (mqttWildcard(topic, "owntracks/+/+/event") !== null) {
-    const t = mqttWildcard(topic, "owntracks/+/+/event")
-    const device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
-    const announce_map = {cnsiphone: "Daddy", hnsiphone: "Mummy"}
-    // say_helper("garage", `${announce_map[t[1]]} is home`)
-    if (message._type === "transition" && message.desc === "Home" && device_map[t[1]]) {
-      if (message.event === "enter") {
-        say_helper("kitchen", `${announce_map[t[1]]} is home`)
-        get_alarm_state()
-          .then(state => {
-            if (state === "Disarm") {
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], "You just got home, alarm is DISARMED")
-            }
-            else {
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just got home, alarm is ${state}, attempting to disarm`)
-              set_alarm_state("disarm")
-            }
-          })
-      }
-      if (message.event === "leave") {
-        say_helper("kitchen", `${device_map[t[1]]} just left`)
-        say_helper("garage", `${device_map[t[1]]} just left`)
-        get_alarm_state()
-          .then(state => {
-            if (state === "Disarm")
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just without setting the alarm`)
-          })
-      }
-    }
-  }
-
   //zwave log
   if (topic === "zwave/log")
     notify_helper(CHRIS_TELEGRAM_ID, `zwave ${message.homeid} ${JSON.stringify(message.log)}`)
@@ -194,13 +163,6 @@ const send_camera_to = (camera, who) => {
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
 
-const is_alarm_device_open = device => {
-  if (current_alarm_full_status && current_alarm_full_status.ready_status === true) {
-    return false
-  }
-  return (device.troubles && device.troubles.includes("OPENED"))
-}
-
 const messages = {
   start: "/start",
   unlock_door: "Unlock the door",
@@ -228,7 +190,8 @@ const zwave_messages = {
 
 const TL_MAP = {
   chris: CHRIS_TELEGRAM_ID,
-  hannah: HANNAH_TELEGRAM_ID
+  hannah: HANNAH_TELEGRAM_ID,
+  everyone: GROUP_TELEGRAM_ID
 }
 
 const message_parser = message => {
@@ -245,8 +208,6 @@ const zwave_helper = (thing, state) => iotdata.updateThingShadow({
     payload: JSON.stringify({state: {desired: state}})
   }
 ).promise()
-
-const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
 const notify_helper = (who, message, actions = null, disableNotification = false, image = null) =>
   awsMqttClient.publish(`notify/in/${who}`, JSON.stringify({
@@ -287,34 +248,42 @@ rulesAdd("the alarm is not {string}", async state => {
   return current_state !== state
 })
 
-rulesAdd("the {string} speaker says {string}", (speaker, message) => {
-  say_helper(speaker, message)
-  return true
+rulesAdd("the alarm is {string}", async state => {
+  let current_state = await get_alarm_state()
+  return current_state === state
 })
+
+rulesAdd("the {string} speaker says {string}", (speaker, message) =>
+  say_helper(speaker, message)
+)
 
 rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   if (camera === "Driveway camera")
     camera = camera_external_driveway
-  if (who === "everyone")
-    who = GROUP_TELEGRAM_ID
 
-  send_camera_to(camera, who)
-  return true
+  return send_camera_to(camera, TL_MAP[who.toLowerCase())
 })
 
-rulesAdd("a message reading {string} is sent to {string} with a button to {string}", async (message, who, button) => {
-  if (who === "everyone")
-    who = GROUP_TELEGRAM_ID
-  notify_helper(who, message, [button])
-  return true
+rulesAdd("{string} {string} Home", (device, transition, event) => {
+  const t = mqttWildcard(event.topic, "owntracks/+/+/event")
+  return t !== null &&
+    t[1] === device &&
+    event.message._type === "transition" &&
+    event.message.event === transition &&
+    event.message.desc === "Home"
 })
 
-rulesAdd("a message reading {string} is sent to {string}", async (message, who) => {
-  if (who === "everyone")
-    who = GROUP_TELEGRAM_ID
-  notify_helper(who, message)
-  return true
-})
+rulesAdd("the alarm state should be {string}", state =>
+  set_alarm_state(state.toLowerCase())
+)
+
+rulesAdd("a message reading {string} is sent to {string}", (message, who) =>
+  notify_helper(TL_MAP[who.toLowerCase()], message)
+)
+
+rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
+  notify_helper(TL_MAP[who.toLowerCase()], message, [button])
+)
 
 awsMqttClient.on("message", (topic, message) =>
   eventHandler({topic: topic, message: message_parser(message)}))
