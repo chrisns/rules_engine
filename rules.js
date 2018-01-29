@@ -1,20 +1,12 @@
 const Gherkin = require("gherkin")
-// const EventEmitter = require("events")
-//
-// class MyEmitter extends EventEmitter {}
-
-// const myEmitter = new MyEmitter()
-
 const {CucumberExpression, ParameterTypeRegistry} = require("cucumber-expressions")
 const parameterTypeRegistry = new ParameterTypeRegistry()
-
 const parser = new Gherkin.Parser()
 
-const makePickles = gherkin => new Gherkin.Compiler().compile(parser.parse(gherkin))
-
-// const pickles = makePickles(gherkindoc)
-
 const functions = []
+let pickedGherkin
+
+const makePickles = gherkin => new Gherkin.Compiler().compile(parser.parse(gherkin))
 
 const rulesAdd = (match, func) => functions.push({
   match: new CucumberExpression(match, parameterTypeRegistry),
@@ -32,29 +24,19 @@ const pickleGherkinWithMethods = pickles => pickles.map(scenario => {
           throw `No defined step for ${step.text}`
       }
     )
-    scenario.entry = (event) => {
-
+    scenario.entry = async (...event) => {
+      for (const step of scenario.steps)
+        if (!await step.func(...event))
+          break
     }
     return scenario
   }
 )
 
-const event = {
-  topic: "say/foo",
-  message: "aaaa"
-}
+const eventHandler = event => pickedGherkin.forEach(scenario => scenario.entry(event))
 
-const eventHandler = event => {
+const pickleGherkin = gherkin => pickedGherkin = pickleGherkinWithMethods(makePickles(gherkin))
 
-}
-
-// const event_handler = (event) =>
-//   pickles.forEach(pickle =>
-//     pickle.steps[0].func(event)
-//   )
-
-// event_handler(event)
-
-// exports.pickleGherkinWithMethods = pickleGherkinWithMethods
 exports.rulesAdd = rulesAdd
 exports.eventHandler = eventHandler
+exports.pickleGherkin = pickleGherkin
