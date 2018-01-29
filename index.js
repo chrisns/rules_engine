@@ -7,6 +7,9 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
+const fs = require("fs")
+const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n\n")
 
 const AWSMqtt = require("aws-mqtt-client").default
 
@@ -182,24 +185,6 @@ awsMqttClient.on("message", function (topic, message) {
     }
   }
 
-  // someone at the door
-  if (topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents"
-    && message.current.state.reported.basic.Basic === 0
-    && message.current.state.reported.basic.Basic !== message.previous.state.reported.basic.Basic) {
-    console.log("door bell!")
-    get_alarm_state()
-      .then(state => {
-        if (state !== "Away") {
-          say_helper("kitchen", "Someone at the door")
-          say_helper("garage", "Someone at the door")
-        }
-      })
-
-    notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
-
-    send_camera_to("camera_external_driveway", GROUP_TELEGRAM_ID)
-
-  }
 
 })
 
@@ -270,9 +255,10 @@ const message_parser = message => {
 }
 
 const zwave_helper = (thing, state) => iotdata.updateThingShadow({
-  thingName: thing,
-  payload: JSON.stringify({state: {desired: state}})
-},).promise()
+    thingName: thing,
+    payload: JSON.stringify({state: {desired: state}})
+  }
+).promise()
 
 const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
 
@@ -295,3 +281,42 @@ awsMqttClient.on("connect", () => console.log("aws connected"))
 awsMqttClient.on("error", (error) => console.error("aws", error))
 awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
+
+rulesAdd("the {string} button is {string}", (thing, action, event) => {
+  if (thing === "doorbell" &&
+    event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
+    event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic)
+    return true
+  return false
+})
+
+rulesAdd("the alarm is not {string}", async state => {
+  let current_state = await get_alarm_state()
+  return current_state !== state
+})
+
+rulesAdd("the {string} speaker says {string}", (speaker, message) => {
+  say_helper(speaker, message)
+  return true
+})
+
+rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
+  if (camera === "Driveway camera")
+    camera = camera_external_driveway
+  if (who === "everyone")
+    who = GROUP_TELEGRAM_ID
+
+  send_camera_to(camera, who)
+})
+
+rulesAdd("a message reading {string} is sent to {string} with a button to {string}", async (message, who, button) => {
+  if (who === "everyone")
+    who = GROUP_TELEGRAM_ID
+  notify_helper(who, message, [button])
+})
+
+awsMqttClient.on("message", (topic, message) =>
+  eventHandler({topic: topic, message: message_parser(message)}))
+
+// pickling needs to be done after adding all the rules
+pickleGherkin(gherkin)
