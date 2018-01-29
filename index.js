@@ -9,7 +9,7 @@ const uuid = require("uuid/v4")
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
 const fs = require("fs")
-const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n\n")
+const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
 
 const AWSMqtt = require("aws-mqtt-client").default
 
@@ -94,18 +94,6 @@ awsMqttClient.on("message", function (topic, message) {
     }
   }
 
-  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
-    // alarm state has changed
-    if (message.previous.state.reported.state !== message.current.state.reported.state) {
-      console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
-      notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
-
-      if (message.current.state.reported.state === "Disarm") {
-        say_helper("kitchen", `Alarm is now disarmed`)
-      }
-    }
-  }
-
   //zwave log
   if (topic === "zwave/log")
     notify_helper(CHRIS_TELEGRAM_ID, `zwave ${message.homeid} ${JSON.stringify(message.log)}`)
@@ -113,7 +101,6 @@ awsMqttClient.on("message", function (topic, message) {
   // react to chatbot commands
   if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
     // send acknowledgement back to user
-    // notify_helper(t[0].toString(), "ACK", null, true)
 
     message = message.toLowerCase()
     console.log(`Telegram user ${t[0]} just sent:"${message}"`)
@@ -184,7 +171,6 @@ awsMqttClient.on("message", function (topic, message) {
       setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
     }
   }
-
 
 })
 
@@ -290,6 +276,12 @@ rulesAdd("the {string} button is {string}", (thing, action, event) => {
   return false
 })
 
+rulesAdd("the alarm state changes to {string}", (state, event) =>
+  event.topic === "$aws/things/alarm_status/shadow/update/documents" &&
+  event.message.previous.state.reported.state !== event.message.current.state.reported.state &&
+  event.message.previous.state.reported.state === "state"
+)
+
 rulesAdd("the alarm is not {string}", async state => {
   let current_state = await get_alarm_state()
   return current_state !== state
@@ -307,16 +299,26 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
     who = GROUP_TELEGRAM_ID
 
   send_camera_to(camera, who)
+  return true
 })
 
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", async (message, who, button) => {
   if (who === "everyone")
     who = GROUP_TELEGRAM_ID
   notify_helper(who, message, [button])
+  return true
+})
+
+rulesAdd("a message reading {string} is sent to {string}", async (message, who) => {
+  if (who === "everyone")
+    who = GROUP_TELEGRAM_ID
+  notify_helper(who, message)
+  return true
 })
 
 awsMqttClient.on("message", (topic, message) =>
   eventHandler({topic: topic, message: message_parser(message)}))
 
 // pickling needs to be done after adding all the rules
+console.log(gherkin)
 pickleGherkin(gherkin)
