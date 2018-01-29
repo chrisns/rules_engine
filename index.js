@@ -183,7 +183,9 @@ awsMqttClient.on("message", function (topic, message) {
   }
 
   // someone at the door
-  if (topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" && message.current.state.reported.basic.Basic === 0) {
+  if (topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents"
+    && message.current.state.reported.basic.Basic === 0
+    && message.current.state.reported.basic.Basic !== message.previous.state.reported.basic.Basic) {
     console.log("door bell!")
     get_alarm_state()
       .then(state => {
