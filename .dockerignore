@@ -6,3 +6,8 @@ docker-compose.yml
 .gitignore
 test
 .dockerignore
+.git
+test
+.drone.yml
+.eslintrc.js
+
