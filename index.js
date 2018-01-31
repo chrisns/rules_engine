@@ -63,10 +63,6 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 awsMqttClient.on("message", function (topic, message) {
   message = message_parser(message)
 
-  //zwave log
-  if (topic === "zwave/log")
-    notify_helper(CHRIS_TELEGRAM_ID, `zwave ${message.homeid} ${JSON.stringify(message.log)}`)
-
   // react to chatbot commands
   if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
     // send acknowledgement back to user
@@ -219,8 +215,7 @@ const notify_helper = (who, message, actions = null, disableNotification = false
     }) : null
   }))
 
-const say_helper = (where, what) =>
-  awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
+const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
@@ -259,9 +254,9 @@ rulesAdd("the {string} speaker says {string}", (speaker, message) =>
 
 rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   if (camera === "Driveway camera")
-    camera = camera_external_driveway
+    camera = "camera_external_driveway"
 
-  return send_camera_to(camera, TL_MAP[who.toLowerCase())
+  return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
 
 rulesAdd("{string} {string} Home", (device, transition, event) => {
@@ -273,13 +268,13 @@ rulesAdd("{string} {string} Home", (device, transition, event) => {
     event.message.desc === "Home"
 })
 
-rulesAdd("the alarm state should be {string}", state =>
-  set_alarm_state(state.toLowerCase())
-)
+rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
-rulesAdd("a message reading {string} is sent to {string}", (message, who) =>
-  notify_helper(TL_MAP[who.toLowerCase()], message)
-)
+rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
+
+rulesAdd("a zwave log message is received", event => event.topic === "zwave/log")
+
+rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_MAP[who.toLowerCase()], `zwave ${event.message.homeid} ${JSON.stringify(event.message.log)}`))
 
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
   notify_helper(TL_MAP[who.toLowerCase()], message, [button])
