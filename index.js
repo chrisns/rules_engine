@@ -7,6 +7,9 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
+const fs = require("fs")
+const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
 
 const AWSMqtt = require("aws-mqtt-client").default
 
@@ -60,57 +63,9 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 awsMqttClient.on("message", function (topic, message) {
   message = message_parser(message)
 
-  if (mqttWildcard(topic, "owntracks/+/+/event") !== null) {
-    const t = mqttWildcard(topic, "owntracks/+/+/event")
-    const device_map = {cnsiphone: "Chris", hnsiphone: "Hannah"}
-    const announce_map = {cnsiphone: "Daddy", hnsiphone: "Mummy"}
-    // say_helper("garage", `${announce_map[t[1]]} is home`)
-    if (message._type === "transition" && message.desc === "Home" && device_map[t[1]]) {
-      if (message.event === "enter") {
-        say_helper("kitchen", `${announce_map[t[1]]} is home`)
-        get_alarm_state()
-          .then(state => {
-            if (state === "Disarm") {
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], "You just got home, alarm is DISARMED")
-            }
-            else {
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just got home, alarm is ${state}, attempting to disarm`)
-              set_alarm_state("disarm")
-            }
-          })
-      }
-      if (message.event === "leave") {
-        say_helper("kitchen", `${device_map[t[1]]} just left`)
-        say_helper("garage", `${device_map[t[1]]} just left`)
-        get_alarm_state()
-          .then(state => {
-            if (state === "Disarm")
-              notify_helper(TL_MAP[device_map[t[1]].toLowerCase()], `You just without setting the alarm`)
-          })
-      }
-    }
-  }
-
-  if (topic === "$aws/things/alarm_status/shadow/update/documents") {
-    // alarm state has changed
-    if (message.previous.state.reported.state !== message.current.state.reported.state) {
-      console.log(`Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
-      notify_helper(GROUP_TELEGRAM_ID, `Alarm state changed to ${message.current.state.reported.state}, it was ${message.previous.state.reported.state}`)
-
-      if (message.current.state.reported.state === "Disarm") {
-        say_helper("kitchen", `Alarm is now disarmed`)
-      }
-    }
-  }
-
-  //zwave log
-  if (topic === "zwave/log")
-    notify_helper(CHRIS_TELEGRAM_ID, `zwave ${message.homeid} ${JSON.stringify(message.log)}`)
-
   // react to chatbot commands
   if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
     // send acknowledgement back to user
-    // notify_helper(t[0].toString(), "ACK", null, true)
 
     message = message.toLowerCase()
     console.log(`Telegram user ${t[0]} just sent:"${message}"`)
@@ -182,25 +137,6 @@ awsMqttClient.on("message", function (topic, message) {
     }
   }
 
-  // someone at the door
-  if (topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents"
-    && message.current.state.reported.basic.Basic === 0
-    && message.current.state.reported.basic.Basic !== message.previous.state.reported.basic.Basic) {
-    console.log("door bell!")
-    get_alarm_state()
-      .then(state => {
-        if (state !== "Away") {
-          say_helper("kitchen", "Someone at the door")
-          say_helper("garage", "Someone at the door")
-        }
-      })
-
-    notify_helper(GROUP_TELEGRAM_ID, `Someone at the door`, [messages.unlock_door])
-
-    send_camera_to("camera_external_driveway", GROUP_TELEGRAM_ID)
-
-  }
-
 })
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
@@ -222,13 +158,6 @@ const send_camera_to = (camera, who) => {
 }
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
-
-const is_alarm_device_open = device => {
-  if (current_alarm_full_status && current_alarm_full_status.ready_status === true) {
-    return false
-  }
-  return (device.troubles && device.troubles.includes("OPENED"))
-}
 
 const messages = {
   start: "/start",
@@ -257,7 +186,8 @@ const zwave_messages = {
 
 const TL_MAP = {
   chris: CHRIS_TELEGRAM_ID,
-  hannah: HANNAH_TELEGRAM_ID
+  hannah: HANNAH_TELEGRAM_ID,
+  everyone: GROUP_TELEGRAM_ID
 }
 
 const message_parser = message => {
@@ -270,11 +200,10 @@ const message_parser = message => {
 }
 
 const zwave_helper = (thing, state) => iotdata.updateThingShadow({
-  thingName: thing,
-  payload: JSON.stringify({state: {desired: state}})
-},).promise()
-
-const lights_helper = (light, state) => client.publish(`lifx-lights/${light}`, state)
+    thingName: thing,
+    payload: JSON.stringify({state: {desired: state}})
+  }
+).promise()
 
 const notify_helper = (who, message, actions = null, disableNotification = false, image = null) =>
   awsMqttClient.publish(`notify/in/${who}`, JSON.stringify({
@@ -286,8 +215,7 @@ const notify_helper = (who, message, actions = null, disableNotification = false
     }) : null
   }))
 
-const say_helper = (where, what) =>
-  awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
+const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
@@ -295,3 +223,66 @@ awsMqttClient.on("connect", () => console.log("aws connected"))
 awsMqttClient.on("error", (error) => console.error("aws", error))
 awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
+
+rulesAdd("the {string} button is {string}", (thing, action, event) => {
+  if (thing === "doorbell" &&
+    event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
+    event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic)
+    return true
+  return false
+})
+
+rulesAdd("the alarm state changes to {string}", (state, event) =>
+  event.topic === "$aws/things/alarm_status/shadow/update/documents" &&
+  event.message.previous.state.reported.state !== event.message.current.state.reported.state &&
+  event.message.previous.state.reported.state === "state"
+)
+
+rulesAdd("the alarm is not {string}", async state => {
+  let current_state = await get_alarm_state()
+  return current_state !== state
+})
+
+rulesAdd("the alarm is {string}", async state => {
+  let current_state = await get_alarm_state()
+  return current_state === state
+})
+
+rulesAdd("the {string} speaker says {string}", (speaker, message) =>
+  say_helper(speaker, message)
+)
+
+rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
+  if (camera === "Driveway camera")
+    camera = "camera_external_driveway"
+
+  return send_camera_to(camera, TL_MAP[who.toLowerCase()])
+})
+
+rulesAdd("{string} {string} Home", (device, transition, event) => {
+  const t = mqttWildcard(event.topic, "owntracks/+/+/event")
+  return t !== null &&
+    t[1] === device &&
+    event.message._type === "transition" &&
+    event.message.event === transition &&
+    event.message.desc === "Home"
+})
+
+rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
+
+rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
+
+rulesAdd("a zwave log message is received", event => event.topic === "zwave/log")
+
+rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_MAP[who.toLowerCase()], `zwave ${event.message.homeid} ${JSON.stringify(event.message.log)}`))
+
+rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
+  notify_helper(TL_MAP[who.toLowerCase()], message, [button])
+)
+
+awsMqttClient.on("message", (topic, message) =>
+  eventHandler({topic: topic, message: message_parser(message)}))
+
+// pickling needs to be done after adding all the rules
+console.log(gherkin)
+pickleGherkin(gherkin)
