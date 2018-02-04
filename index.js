@@ -30,6 +30,12 @@ const iotdata = new AWS.IotData({
 
 })
 
+const rekognition = new AWS.Rekognition({
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: "eu-west-1"
+})
+
 const s3 = new AWS.S3({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
@@ -143,18 +149,30 @@ const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
 const send_camera_to = (camera, who) => {
   let inst_uuid = uuid()
+  let imageBody
   return iotdata.getThingShadow({thingName: camera}).promise()
     .then(thing => JSON.parse(thing.payload).state.reported.jpg)
 
     .then(camera_url => request({uri: camera_url, encoding: null}))
-    .then(body => s3.putObject({
-      Body: body,
+    .then(body => imageBody = body)
+    .then(() => s3.putObject({
+      Body: imageBody,
       Key: `${inst_uuid}.jpg`,
       ContentType: "image/jpeg",
       Bucket: "me.cns.p.cams"
     }).promise())
     .then(() => s3.getSignedUrl("getObject", {Bucket: "me.cns.p.cams", Key: `${inst_uuid}.jpg`}))
     .then(signedurl => notify_helper(who, null, null, true, signedurl))
+    .then(() => rekognition.detectLabels({
+      Image: {
+        Bytes: imageBody,
+      },
+      MaxLabels: 20,
+      MinConfidence: 70
+    }).promise())
+    .then(labels => labels.Labels.map(label => label.Name))
+    .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
+
 }
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
