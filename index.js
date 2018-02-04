@@ -236,7 +236,7 @@ rulesAdd("the {string} button is {string}", (thing, action, event) => {
 rulesAdd("the alarm state changes to {string}", (state, event) =>
   event.topic === "$aws/things/alarm_status/shadow/update/documents" &&
   event.message.previous.state.reported.state !== event.message.current.state.reported.state &&
-  event.message.previous.state.reported.state.toLowerCase() === state.toLowerCase()
+  event.message.current.state.reported.state.toLowerCase() === state.toLowerCase()
 )
 
 rulesAdd("the alarm is not {string}", async state => {
