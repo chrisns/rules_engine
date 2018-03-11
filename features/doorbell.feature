@@ -10,3 +10,9 @@ Feature: Doorbell
     When the alarm is not "Away"
     And the "Kitchen" speaker says "someone at the door"
     And the "Garage" speaker says "someone at the door"
+
+  Scenario: Make the door lock temporarily noisy
+    Given the "doorbell" button is "pressed"
+    Then the "front door lock" config "Audio Mode" should be "High"
+    Then a delay of 1 minutes
+    Then the "front door lock" config "Audio Mode" should be "Silent"
