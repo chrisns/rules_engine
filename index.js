@@ -5,6 +5,7 @@ const _ = require("lodash")
 const AWS = require("aws-sdk")
 const request = require("request-promise-native")
 const uuid = require("uuid/v4")
+const Date = require("sugar-date").Date
 
 const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
@@ -184,8 +185,6 @@ const messages = {
   arm_alarm_home: "Arm alarm home",
   arm_alarm_away: "Arm alarm away",
   get_alarm_status: "Get alarm status",
-  doorbell_off: "Doorbell off",
-  doorbell_on: "Doorbell on",
   cam_driveway: "Get driveway camera",
   cam_garden: "Get garden camera",
   zwave: "Z-wave management"
@@ -243,6 +242,7 @@ awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
 
 rulesAdd("the {string} button is {string}", (thing, action, event) => {
+  console.log(event)
   if (thing === "doorbell" &&
     event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
     event.message.current.state.reported.basic.Basic === 0 &&
@@ -286,6 +286,44 @@ rulesAdd("{string} {string} Home", (device, transition, event) => {
     event.message.event === transition &&
     event.message.desc === "Home"
 })
+
+const calculate_time = (number, measure) => {
+  switch (measure) {
+    case "milliseconds":
+    case "millisecond":
+      return number
+    case "seconds":
+    case "second":
+      return calculate_time(number * 1000, "milliseconds")
+    case "minutes":
+    case "minute":
+      return calculate_time(number * 60, "seconds")
+    case "hours":
+    case "hour":
+      return calculate_time(number * 60, "minutes")
+    default:
+      throw "unknown time measure"
+  }
+}
+
+const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(15, "minutes"))
+
+const thing_lookup = {
+  "front door lock": "zwave_f2e55e6c_4",
+  "Hallway heating": "zwave_f2e55e6c_11",
+  "Kitchen heating": "zwave_f2e55e6c_12",
+  "Dining Room heating": "zwave_f2e55e6c_13"
+}
+
+rulesAdd("a clock tic", event => event.topic === "clock tic")
+
+rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[thing], {[genre]: {[setting]: value}}))
+
+rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end))
+
+rulesAdd("the {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
+
+rulesAdd("a delay of {int} {word}", async (number, measure) => new Promise(resolve => setTimeout(resolve, calculate_time((number, measure.toLowerCase())))))
 
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
