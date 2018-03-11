@@ -111,5 +111,5 @@ describe("rules engine", () => {
 should handle steps returning a promise
 if a step returns false (or eventually returns false) then don't proceed further
 if a step returns truthy (or eventually truthy) then pass event on to the next step
-
+have a better way to handle rules based on time
  */
