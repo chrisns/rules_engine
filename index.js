@@ -187,6 +187,7 @@ const messages = {
   get_alarm_status: "Get alarm status",
   cam_driveway: "Get driveway camera",
   cam_garden: "Get garden camera",
+  cam_porch: "Get porch camera",
   zwave: "Z-wave management"
 }
 
@@ -275,6 +276,9 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   if (camera === "Driveway camera")
     camera = "camera_external_driveway"
 
+  if (camera === "Porch camera")
+    camera = "porch_external_driveway"
+
   return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
 
@@ -312,7 +316,8 @@ const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
-  "Dining Room heating": "zwave_f2e55e6c_13"
+  "Dining Room heating": "zwave_f2e55e6c_13",
+  "Master bedroom radiator": "zwave_f2e55e6c_14"
 }
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
@@ -321,7 +326,9 @@ rulesAdd("the {string} {word} {string} should be {string}", (device, genre, sett
 
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end))
 
-rulesAdd("the {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
+rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
+
+rulesAdd("the {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {"Comfort setpoint": temp}}))
 
 rulesAdd("a delay of {int} {word}", async (number, measure) => new Promise(resolve => setTimeout(resolve, calculate_time((number, measure.toLowerCase())))))
 
