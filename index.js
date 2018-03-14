@@ -277,7 +277,7 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
     camera = "camera_external_driveway"
 
   if (camera === "Porch camera")
-    camera = "porch_external_driveway"
+    camera = "camera_external_porch"
 
   return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
