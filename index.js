@@ -110,6 +110,9 @@ awsMqttClient.on("message", function (topic, message) {
     if (message === messages.cam_garden.toLowerCase())
       send_camera_to("camera_external_garden", t[0])
 
+    if (message === messages.cam_porch.toLowerCase())
+      send_camera_to("camera_external_porch", t[0])
+
     if (message === messages.get_alarm_status.toLowerCase())
       get_alarm_state()
         .then(state => notify_helper(t[0], state))
@@ -243,7 +246,6 @@ awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
 
 rulesAdd("the {string} button is {string}", (thing, action, event) => {
-  console.log(event)
   if (thing === "doorbell" &&
     event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
     event.message.current.state.reported.basic.Basic === 0 &&
@@ -278,7 +280,6 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
 
   if (camera === "Porch camera")
     camera = "camera_external_porch"
-
   return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
 
