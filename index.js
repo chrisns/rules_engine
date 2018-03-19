@@ -329,8 +329,6 @@ rulesAdd("the time is between {string} and {string}", (start, end) => new Date()
 
 rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
 
-rulesAdd("the {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {"Comfort setpoint": temp}}))
-
 rulesAdd("a delay of {int} {word}", async (number, measure) => new Promise(resolve => setTimeout(resolve, calculate_time((number, measure.toLowerCase())))))
 
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
