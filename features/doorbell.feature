@@ -10,6 +10,8 @@ Feature: Doorbell
     Given the "doorbell" button is "pressed"
     When the alarm is not "Away"
     And the "Kitchen" speaker says "someone at the door"
+    And the "Desk" speaker says "someone at the door"
+    And the "Garage" speaker says "someone at the door"
 
   Scenario: Make the door lock temporarily noisy
     Given the "doorbell" button is "pressed"
