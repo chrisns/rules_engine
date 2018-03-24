@@ -7,7 +7,7 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 const Date = require("sugar-date").Date
 
-const {AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
 const fs = require("fs")
 const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
@@ -60,7 +60,7 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
   if (t === null || message == null)
     return
-  // message = message.toLowerCase()
+  
   console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
   if (message === messages.unlock_door.toLowerCase())
