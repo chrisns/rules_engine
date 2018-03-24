@@ -7,7 +7,7 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 const Date = require("sugar-date").Date
 
-const {AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
+const {AWS_IOT_ENDPOINT_HOST, AWS_REGION, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
 const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
 const fs = require("fs")
 const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
@@ -15,32 +15,21 @@ const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features
 const AWSMqtt = require("aws-mqtt-client").default
 
 const awsMqttClient = new AWSMqtt({
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
   endpointAddress: AWS_IOT_ENDPOINT_HOST,
-  region: AWS_REGION,
   logger: console
 })
 
 const iotdata = new AWS.IotData({
   endpoint: AWS_IOT_ENDPOINT_HOST,
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  region: AWS_REGION,
   logger: console
-
 })
 
 const rekognition = new AWS.Rekognition({
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  region: "eu-west-1"
+  logger: console
 })
 
 const s3 = new AWS.S3({
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  region: AWS_REGION,
+  logger: console
 })
 
 const awsTopics = [
@@ -65,9 +54,9 @@ const get_alarm_ready_status = () => iotdata.getThingShadow({thingName: "alarm_s
 const set_alarm_state = state => iotdata.updateThingShadow({
   thingName: "alarm_status",
   payload: JSON.stringify({state: {desired: {state: state}}})
-}, (err, data) => console.log(err, data))
+}).promise()
 
-awsMqttClient.on("message", function (topic, message) {
+awsMqttClient.on("message", (topic, message) => {
   message = message_parser(message)
 
   // react to chatbot commands
@@ -81,7 +70,7 @@ awsMqttClient.on("message", function (topic, message) {
       iotdata.updateThingShadow({
         thingName: "zwave_f2e55e6c_4",
         payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
-      }, (err, data) => console.log(err, data))
+      }).promise()
 
     if (message === messages.arm_alarm_home.toLowerCase()) {
       reply_with_alarm_status(t[0].toString())
@@ -98,7 +87,7 @@ awsMqttClient.on("message", function (topic, message) {
 
     if (message.startsWith("say")) {
       let split_message = /say\s(\w+)(.*)/gi.exec(message)
-      say_helper(split_message[1], split_message[2])
+      say_helper(split_message[1].toLowerCase(), split_message[2])
     }
 
     if (message === messages.start.toLowerCase())
@@ -151,10 +140,8 @@ awsMqttClient.on("message", function (topic, message) {
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
-const send_camera_to = (camera, who) => {
-  let inst_uuid = uuid()
-  let imageBody
-  return iotdata.getThingShadow({thingName: camera}).promise()
+const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
+  iotdata.getThingShadow({thingName: camera}).promise()
     .then(thing => JSON.parse(thing.payload).state.reported.jpg)
 
     .then(camera_url => request({uri: camera_url, encoding: null}))
@@ -176,8 +163,6 @@ const send_camera_to = (camera, who) => {
     }).promise())
     .then(labels => labels.Labels.map(label => label.Name))
     .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
-
-}
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
 
@@ -245,14 +230,12 @@ awsMqttClient.on("error", (error) => console.error("aws", error))
 awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
 
-rulesAdd("the {string} button is {string}", (thing, action, event) => {
-  if (thing === "doorbell" &&
-    event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
-    event.message.current.state.reported.basic.Basic === 0 &&
-    event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic)
-    return true
-  return false
-})
+rulesAdd("the {string} button is {string}", (thing, action, event) =>
+  thing === "doorbell" &&
+  event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
+  event.message.current.state.reported.basic.Basic === 0 &&
+  event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic
+)
 
 rulesAdd("the alarm state changes to {string}", (state, event) =>
   event.topic === "$aws/things/alarm_status/shadow/update/documents" &&
@@ -260,19 +243,11 @@ rulesAdd("the alarm state changes to {string}", (state, event) =>
   event.message.current.state.reported.state.toLowerCase() === state.toLowerCase()
 )
 
-rulesAdd("the alarm is not {string}", async state => {
-  let current_state = await get_alarm_state()
-  return current_state !== state
-})
+rulesAdd("the alarm is not {string}", async state => await get_alarm_state() !== state)
 
-rulesAdd("the alarm is {string}", async state => {
-  let current_state = await get_alarm_state()
-  return current_state === state
-})
+rulesAdd("the alarm is {string}", async state => await get_alarm_state() === state)
 
-rulesAdd("the {string} speaker says {string}", (speaker, message) =>
-  say_helper(speaker, message)
-)
+rulesAdd("the {string} speaker says {string}", (speaker, message) => say_helper(speaker, message))
 
 rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   if (camera === "Driveway camera")
@@ -283,14 +258,13 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
 
-rulesAdd("{string} {string} Home", (device, transition, event) => {
-  const t = mqttWildcard(event.topic, "owntracks/+/+/event")
-  return t !== null &&
-    t[1].toLowerCase() === device.toLowerCase() &&
-    event.message._type === "transition" &&
-    event.message.event.toLowerCase() === transition.toLowerCase() &&
-    event.message.desc.toLowerCase() === "home"
-})
+rulesAdd("{string} {string} Home", (device, transition, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
+  t !== null &&
+  t[1].toLowerCase() === device.toLowerCase() &&
+  event.message._type === "transition" &&
+  event.message.event.toLowerCase() === transition.toLowerCase() &&
+  event.message.desc.toLowerCase() === "home"
+)
 
 const calculate_time = (number, measure) => {
   switch (measure) {
