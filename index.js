@@ -56,84 +56,80 @@ const set_alarm_state = state => iotdata.updateThingShadow({
   payload: JSON.stringify({state: {desired: {state: state}}})
 }).promise()
 
-awsMqttClient.on("message", (topic, message) => {
-  message = message_parser(message)
+// react to chatbot commands
+awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
+  if (t === null || message == null)
+    return
+  // message = message.toLowerCase()
+  console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
-  // react to chatbot commands
-  if ((t = mqttWildcard(topic, "notify/out/+")) && t !== null) {
-    // send acknowledgement back to user
+  if (message === messages.unlock_door.toLowerCase())
+    iotdata.updateThingShadow({
+      thingName: "zwave_f2e55e6c_4",
+      payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
+    }).promise()
 
-    message = message.toLowerCase()
-    console.log(`Telegram user ${t[0]} just sent:"${message}"`)
+  if (message === messages.arm_alarm_home.toLowerCase()) {
+    reply_with_alarm_status(t[0].toString())
+    set_alarm_state("arm_home")
+  }
 
-    if (message === messages.unlock_door.toLowerCase())
-      iotdata.updateThingShadow({
-        thingName: "zwave_f2e55e6c_4",
-        payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
-      }).promise()
+  if (message === messages.arm_alarm_away.toLowerCase()) {
+    reply_with_alarm_status(t[0].toString())
+    set_alarm_state("arm_away")
+  }
 
-    if (message === messages.arm_alarm_home.toLowerCase()) {
-      reply_with_alarm_status(t[0].toString())
-      set_alarm_state("arm_home")
-    }
+  if (message === messages.disarm_alarm.toLowerCase())
+    set_alarm_state("disarm")
 
-    if (message === messages.arm_alarm_away.toLowerCase()) {
-      reply_with_alarm_status(t[0].toString())
-      set_alarm_state("arm_away")
-    }
+  if (message.startsWith("say")) {
+    let split_message = /say\s([\w|,]+)(.*)/gi.exec(message)
+    say_helper(split_message[1].toLowerCase(), split_message[2])
+  }
 
-    if (message === messages.disarm_alarm.toLowerCase())
-      set_alarm_state("disarm")
+  if (message === messages.start.toLowerCase())
+    notify_helper(t[0], `You can do these things`, messages)
 
-    if (message.startsWith("say")) {
-      let split_message = /say\s(\w+)(.*)/gi.exec(message)
-      say_helper(split_message[1].toLowerCase(), split_message[2])
-    }
+  if (message === messages.cam_driveway.toLowerCase())
+    send_camera_to("camera_external_driveway", t[0])
 
-    if (message === messages.start.toLowerCase())
-      notify_helper(t[0], `You can do these things`, messages)
+  if (message === messages.cam_garden.toLowerCase())
+    send_camera_to("camera_external_garden", t[0])
 
-    if (message === messages.cam_driveway.toLowerCase())
-      send_camera_to("camera_external_driveway", t[0])
+  if (message === messages.cam_porch.toLowerCase())
+    send_camera_to("camera_external_porch", t[0])
 
-    if (message === messages.cam_garden.toLowerCase())
-      send_camera_to("camera_external_garden", t[0])
+  if (message === messages.get_alarm_status.toLowerCase())
+    get_alarm_state()
+      .then(state => notify_helper(t[0], state))
 
-    if (message === messages.cam_porch.toLowerCase())
-      send_camera_to("camera_external_porch", t[0])
+  // zwave
+  if (message === messages.zwave.toLowerCase())
+    notify_helper(t[0], `You can do these zwave things`, zwave_messages)
 
-    if (message === messages.get_alarm_status.toLowerCase())
-      get_alarm_state()
-        .then(state => notify_helper(t[0], state))
+  if (message === zwave_messages.zwave_secureadd.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {secureAddNode: random_number()})
 
-    // zwave
-    if (message === messages.zwave.toLowerCase())
-      notify_helper(t[0], `You can do these zwave things`, zwave_messages)
+  if (message === zwave_messages.zwave_add.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {addNode: random_number()})
 
-    if (message === zwave_messages.zwave_secureadd.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {secureAddNode: random_number()})
+  if (message === zwave_messages.zwave_cancel.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {cancelControllerCommand: random_number()})
 
-    if (message === zwave_messages.zwave_add.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {addNode: random_number()})
+  if (message === zwave_messages.zwave_remove.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {removeNode: random_number()})
 
-    if (message === zwave_messages.zwave_cancel.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {cancelControllerCommand: random_number()})
+  if (message === zwave_messages.zwave_heal.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {healNetwork: random_number()})
 
-    if (message === zwave_messages.zwave_remove.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {removeNode: random_number()})
+  if (message === zwave_messages.zwave_reset.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
 
-    if (message === zwave_messages.zwave_heal.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {healNetwork: random_number()})
-
-    if (message === zwave_messages.zwave_reset.toLowerCase())
-      zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
-
-    if (message === zwave_messages.zwave_follow.toLowerCase()) {
-      awsMqttClient.subscribe("zwave/log", {qos: 1},
-        (err, granted) => console.log("aws", err, granted)
-      )
-      setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
-    }
+  if (message === zwave_messages.zwave_follow.toLowerCase()) {
+    awsMqttClient.subscribe("zwave/log", {qos: 1},
+      (err, granted) => console.log("aws", err, granted)
+    )
+    setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
   }
 
 })
