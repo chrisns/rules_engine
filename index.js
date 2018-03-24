@@ -295,6 +295,8 @@ rulesAdd("a clock tic", event => event.topic === "clock tic")
 
 rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[thing], {[genre]: {[setting]: value}}))
 
+rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), {qos: 0}))
+
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
 rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
