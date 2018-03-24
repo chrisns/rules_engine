@@ -4,7 +4,7 @@ Feature: Doorbell
     Given the "doorbell" button is "pressed"
     Then a screengrab of the "Driveway camera" is sent to "everyone"
     And  a screengrab of the "Porch camera" is sent to "everyone"
-    And a message reading "someone at the door" is sent to "everyone" with a button to "Unlock the door"
+    And a message reading "someone at the door" is sent to "everyone" with a button to "Unlock the door, Get porch camera, Get driveway camera"
 
   Scenario: Someone rings the doorbell
     Given the "doorbell" button is "pressed"

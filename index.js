@@ -312,7 +312,7 @@ rulesAdd("a zwave log message is received", event => event.topic === "zwave/log"
 rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_MAP[who.toLowerCase()], `zwave ${event.message.homeid} ${JSON.stringify(event.message.log)}`))
 
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
-  notify_helper(TL_MAP[who.toLowerCase()], message, [button])
+  notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
 
 awsMqttClient.on("message", (topic, message) =>
