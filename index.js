@@ -286,10 +286,10 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
 rulesAdd("{string} {string} Home", (device, transition, event) => {
   const t = mqttWildcard(event.topic, "owntracks/+/+/event")
   return t !== null &&
-    t[1] === device &&
+    t[1].toLowerCase() === device.toLowerCase() &&
     event.message._type === "transition" &&
-    event.message.event === transition &&
-    event.message.desc === "Home"
+    event.message.event.toLowerCase() === transition.toLowerCase() &&
+    event.message.desc.toLowerCase() === "home"
 })
 
 const calculate_time = (number, measure) => {
