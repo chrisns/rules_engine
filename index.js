@@ -133,6 +133,16 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
   }
 
+  if (message === messages.all_off.toLowerCase()) {
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 0}})
+    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: 0}})
+    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": 0}})
+    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: 0}})
+    awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
+    set_alarm_state("arm_home")
+    notify_helper(t[0], "night night")
+  }
+
 })
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
@@ -173,6 +183,7 @@ const messages = {
   cam_driveway: "Get driveway camera",
   cam_garden: "Get garden camera",
   cam_porch: "Get porch camera",
+  all_off: "Bedtime everything off + arm home",
   zwave: "Z-wave management"
 }
 
@@ -292,6 +303,7 @@ const thing_lookup = {
   "Master bedroom radiator": "zwave_f2e55e6c_14",
   "Kitchen multisensor": "zwave_f2e55e6c_17",
   "Kitchen lights": "zwave_f2e55e6c_16",
+  "Lounge lights": "zwave_f2e55e6c_15",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
