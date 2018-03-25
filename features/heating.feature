@@ -10,9 +10,9 @@ Feature: Heating schedule
   Scenario: Evening setpoint
     Given a clock tic
     And the time is between "5pm" and "10pm"
-    Then the underfloor "Hallway heating" should be 24°C
-    And the underfloor "Kitchen heating" should be 24°C
-    And the underfloor "Dining Room heating" should be 24°C
+    Then the underfloor "Hallway heating" should be 26°C
+    And the underfloor "Kitchen heating" should be 26°C
+    And the underfloor "Dining Room heating" should be 26°C
 
   Scenario: Nighttime setpoint
     Given a clock tic
