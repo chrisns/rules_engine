@@ -36,6 +36,7 @@ const awsTopics = [
   "owntracks/+/+/event",
   "$aws/things/alarm_status/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_10/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -60,7 +61,7 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
   if (t === null || message == null)
     return
-  
+
   console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
   if (message === messages.unlock_door.toLowerCase())
@@ -288,12 +289,24 @@ const thing_lookup = {
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Dining Room heating": "zwave_f2e55e6c_13",
-  "Master bedroom radiator": "zwave_f2e55e6c_14"
+  "Master bedroom radiator": "zwave_f2e55e6c_14",
+  "Kitchen multisensor": "zwave_f2e55e6c_17",
+  "Kitchen lights": "zwave_f2e55e6c_16",
 }
+
+rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
+  await iotdata.getThingShadow({thingName: thing_lookup[device]}).promise()
+    .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
+)
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
 
-rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[thing], {[genre]: {[setting]: value}}))
+rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], {[genre]: {[setting]: value}}))
+
+rulesAdd("there is movement is detected on the {string}", (device, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported.user.Burglar === 8 &&
+  event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
 
 rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), {qos: 0}))
 

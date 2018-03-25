@@ -1,6 +1,5 @@
 Feature: Location based events
 
-
   Scenario: Chris leaves but does not set the alarm
     Given "cnsiphone" "leave" Home
     When the alarm is "Disarm"
