@@ -198,6 +198,12 @@ const zwave_messages = {
   zwave_follow: "Follow events for 5 minutes"
 }
 
+const camera_map = {
+  camera_external_driveway: "Driveway camera",
+  camera_external_porch: "Porch camera",
+  camera_external_garden: "Garden camera"
+}
+
 const TL_MAP = {
   chris: CHRIS_TELEGRAM_ID,
   hannah: HANNAH_TELEGRAM_ID,
@@ -289,7 +295,7 @@ const calculate_time = (number, measure) => {
     case "hour":
       return calculate_time(number * 60, "minutes")
     default:
-      throw "unknown time measure"
+      throw `unknown time measure: ${measure}`
   }
 }
 
@@ -326,7 +332,8 @@ rulesAdd("the time is between {string} and {string}", (start, end) => new Date()
 
 rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
 
-rulesAdd("a delay of {int} {word}", async (number, measure) => new Promise(resolve => setTimeout(resolve, calculate_time((number, measure.toLowerCase())))))
+rulesAdd("a delay of {int} {word}", async (number, measure) =>
+  new Promise(resolve => setTimeout(resolve, calculate_time(number, measure.toLowerCase()))))
 
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
