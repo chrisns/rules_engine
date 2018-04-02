@@ -137,7 +137,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 0}})
     zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: 0}})
     zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": 0}})
-    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: 0}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: 0}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": 0}})
     awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
@@ -310,6 +311,7 @@ const thing_lookup = {
   "Kitchen multisensor": "zwave_f2e55e6c_17",
   "Kitchen lights": "zwave_f2e55e6c_16",
   "Lounge lights": "zwave_f2e55e6c_15",
+  "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
