@@ -27,7 +27,7 @@ Feature: Heating schedule
   Scenario: Loft en-suite morning
     Given a clock tic
     When the alarm is not "Away"
-    And the time is between "6am" and "9am"
+    And the time is between "5:30am" and "9am"
     Then the underfloor "Loft en-suite heating" should be 30°C
 
   Scenario: Loft en-suite day
