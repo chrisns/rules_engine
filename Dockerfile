@@ -15,4 +15,5 @@ FROM node:alpine
 COPY --from=build /app /app
 WORKDIR /app
 COPY . .
+ENV NODE_ENV=production
 CMD node index.js

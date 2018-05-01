@@ -27,7 +27,7 @@ Feature: Heating schedule
   Scenario: Loft en-suite morning
     Given a clock tic
     When the alarm is not "Away"
-    And the time is between "5:30am" and "9am"
+    And the time is between "5am" and "9am"
     Then the underfloor "Loft en-suite heating" should be 30°C
 
   Scenario: Loft en-suite day
@@ -35,3 +35,19 @@ Feature: Heating schedule
     When the alarm is not "Away"
     And the time is between "9am" and "1pm"
     Then the underfloor "Loft en-suite heating" should be 7°C
+
+  Scenario: Remind Hallway underfloor heating to use floor sensors
+    Given the "Hallway heating" is reporting config "Temperature sensor" not "F  - Floor mode"
+    Then the "Hallway heating" config "Temperature sensor" should be "F  - Floor mode"
+
+  Scenario: Remind Kitchen underfloor heating to use floor sensors
+    Given the "Kitchen heating" is reporting config "Temperature sensor" not "F  - Floor mode"
+    Then the "Kitchen heating" config "Temperature sensor" should be "F  - Floor mode"
+
+  Scenario: Remind Dining Room underfloor heating to use floor sensors
+    Given the "Dining Room heating" is reporting config "Temperature sensor" not "F  - Floor mode"
+    Then the "Dining Room heating" config "Temperature sensor" should be "F  - Floor mode"
+
+  Scenario: Remind Loft en-suite underfloor heating to use floor sensors
+    Given the "Loft en-suite heating" is reporting config "Temperature sensor" not "F  - Floor mode"
+    Then the "Loft en-suite heating" config "Temperature sensor" should be "F  - Floor mode"

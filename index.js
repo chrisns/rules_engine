@@ -300,7 +300,7 @@ const calculate_time = (number, measure) => {
   }
 }
 
-const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(15, "minutes"))
+const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(15, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
 
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
@@ -318,6 +318,11 @@ const thing_lookup = {
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
   await iotdata.getThingShadow({thingName: thing_lookup[device]}).promise()
     .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
+)
+
+rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported[genre.toLowerCase()][label] !== value
 )
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
