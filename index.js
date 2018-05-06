@@ -300,7 +300,7 @@ const calculate_time = (number, measure) => {
   }
 }
 
-const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(15, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
+const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
 
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
