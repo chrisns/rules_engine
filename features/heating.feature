@@ -25,14 +25,24 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite morning
     Given a clock tic
-    When the time is between "5am" and "9am"
+    When the time is between "5:30am" and "7am"
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 30°C
+
+  Scenario: Loft en-suite evening shower
+    Given a clock tic
+    When the time is between "4:30pm" and "6pm"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 30°C
 
   Scenario: Loft en-suite day
     Given a clock tic
-    When the time is between "9am" and "1pm"
-    And the alarm is not "Away"
+    When the time is between "8am" and "1pm"
+    Then the underfloor "Loft en-suite heating" should be 7°C
+
+  Scenario: Loft en-suite evening
+    Given a clock tic
+    When the time is between "6pm" and "7pm"
     Then the underfloor "Loft en-suite heating" should be 7°C
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
