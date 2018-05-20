@@ -310,7 +310,8 @@ const thing_lookup = {
   "Dining Room heating": "zwave_f2e55e6c_13",
   "Master bedroom radiator": "zwave_f2e55e6c_14",
   "Kitchen multisensor": "zwave_f2e55e6c_17",
-  "Kitchen lights": "zwave_f2e55e6c_16",
+  "Kitchen old lights": "zwave_f2e55e6c_16",
+  "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
