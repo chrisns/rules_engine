@@ -8,8 +8,8 @@ Feature: Lighting
 
 
   Scenario: Remind Kitchen lights to use bi stable switches
-    Given the "Kitchen lights" is reporting config "Inputs Button/Switch configuration" not "Bi-stable input (switch)"
-    Then the "Kitchen lights" config "Inputs Button/Switch configuration" should be "Bi-stable input (switch)"
+    Given the "Kitchen lights" is reporting config "Input 1 switch type" not "Bi-stable"
+    Then the "Kitchen lights" config "Input 1 switch type" should be "Bi-stable"
 
 
   Scenario: Remind Lounge lights to use bi stable switches
