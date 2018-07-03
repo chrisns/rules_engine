@@ -273,13 +273,17 @@ rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
   return send_camera_to(camera, TL_MAP[who.toLowerCase()])
 })
 
-rulesAdd("{string} {string} Home", (device, transition, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
+rulesAdd("{word} leaves home", (device, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
   t !== null &&
   t[1].toLowerCase() === device.toLowerCase() &&
-  event.message._type === "transition" &&
-  event.message.event.toLowerCase() === transition.toLowerCase() &&
-  event.message.desc.toLowerCase() === "home"
-)
+  event.message.event.toLowerCase() === "leave" &&
+  event.message.desc.toLowerCase() === "home")
+
+rulesAdd("{word} arrives home", (device, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
+  t !== null &&
+  t[1].toLowerCase() === device.toLowerCase() &&
+  event.message.event.toLowerCase() === "enter" &&
+  event.message.desc.toLowerCase() === "home")
 
 const calculate_time = (number, measure) => {
   switch (measure) {
@@ -355,6 +359,11 @@ rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
+
+rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
+  thingName: "zwave_f2e55e6c_4",
+  payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
+}).promise())
 
 awsMqttClient.on("message", (topic, message) =>
   eventHandler({topic: topic, message: message_parser(message)}))
