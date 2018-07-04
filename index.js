@@ -25,6 +25,7 @@ const iotdata = new AWS.IotData({
 })
 
 const rekognition = new AWS.Rekognition({
+  region: "eu-west-1",
   logger: console
 })
 
