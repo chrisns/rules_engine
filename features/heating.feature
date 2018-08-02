@@ -27,22 +27,33 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "5:30am" and "7am"
     And the alarm is not "Away"
-    Then the underfloor "Loft en-suite heating" should be 30°C
+    Then the underfloor "Loft en-suite heating" should be 35°C
 
   Scenario: Loft en-suite evening shower
     Given a clock tic
     When the time is between "4:30pm" and "6pm"
     And the alarm is not "Away"
-    Then the underfloor "Loft en-suite heating" should be 30°C
+    Then the underfloor "Loft en-suite heating" should be 35°C
 
   Scenario: Loft en-suite day
     Given a clock tic
     When the time is between "8am" and "1pm"
     Then the underfloor "Loft en-suite heating" should be 7°C
 
-  Scenario: Loft en-suite evening
+  Scenario: Loft en-suite after evening shower
     Given a clock tic
     When the time is between "6pm" and "7pm"
+    Then the underfloor "Loft en-suite heating" should be 7°C
+
+  Scenario: Loft en-suite bedtime
+    Given a clock tic
+    When the time is between "9pm" and "10pm"
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 35°C
+
+  Scenario: Loft en-suite after bedtime
+    Given a clock tic
+    When the time is between "10pm" and "11pm"
     Then the underfloor "Loft en-suite heating" should be 7°C
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
@@ -60,3 +71,7 @@ Feature: Heating schedule
   Scenario: Remind Loft en-suite underfloor heating to use floor sensors
     Given the "Loft en-suite heating" is reporting config "Temperature sensor" not "F  - Floor mode"
     Then the "Loft en-suite heating" config "Temperature sensor" should be "F  - Floor mode"
+
+  Scenario: Remind Family bathroom heating underfloor heating to use floor sensors
+    Given the "Family bathroom heating" is reporting config "Temperature sensor" not "F  - Floor mode"
+    Then the "Family bathroom heating" config "Temperature sensor" should be "F  - Floor mode"

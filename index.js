@@ -145,7 +145,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     notify_helper(t[0], "night night")
   }
 
-})
+}
+)
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
@@ -309,6 +310,7 @@ const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculat
 
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
+  "Family bathroom heating": "zwave_f2e55e6c_21",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Loft en-suite heating": "zwave_f2e55e6c_19",
