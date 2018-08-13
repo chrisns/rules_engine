@@ -211,6 +211,8 @@ const zwave_messages = {
 
 const camera_map = {
   camera_external_driveway: "Driveway camera",
+  camera_external_back: "Front camera",
+  camera_external_front: "Back camera",
   camera_external_porch: "Porch camera",
   camera_external_garden: "Garden camera"
 }
