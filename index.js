@@ -92,6 +92,12 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.start.toLowerCase())
     notify_helper(t[0], `You can do these things`, messages)
 
+  if (message === messages.cam_back.toLowerCase())
+    send_camera_to("camera_external_back", t[0])
+
+  if (message === messages.cam_front.toLowerCase())
+    send_camera_to("camera_external_front", t[0])
+
   if (message === messages.cam_driveway.toLowerCase())
     send_camera_to("camera_external_driveway", t[0])
 
@@ -186,6 +192,8 @@ const messages = {
   cam_driveway: "Get driveway camera",
   cam_garden: "Get garden camera",
   cam_porch: "Get porch camera",
+  cam_front: "Get front camera",
+  cam_back: "Get back camera",
   all_off: "Bedtime everything off + arm home",
   zwave: "Z-wave management"
 }
