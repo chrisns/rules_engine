@@ -59,7 +59,9 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 }).promise()
 
 // react to chatbot commands
-awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
+awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null)
+=>
+{
   if (t === null || message == null)
     return
 
@@ -276,14 +278,8 @@ rulesAdd("the alarm is {string}", async state => await get_alarm_state() === sta
 
 rulesAdd("the {string} speaker says {string}", (speaker, message) => say_helper(speaker, message))
 
-rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) => {
-  if (camera === "Driveway camera")
-    camera = "camera_external_driveway"
-
-  if (camera === "Porch camera")
-    camera = "camera_external_porch"
-  return send_camera_to(camera, TL_MAP[who.toLowerCase()])
-})
+rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) =>
+  send_camera_to(Object.keys(camera_map).find(key => camera_map[key] === camera), TL_MAP[who.toLowerCase()]))
 
 rulesAdd("{word} leaves home", (device, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
   t !== null &&
