@@ -59,9 +59,7 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 }).promise()
 
 // react to chatbot commands
-awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null)
-=>
-{
+awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
   if (t === null || message == null)
     return
 
