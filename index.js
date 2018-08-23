@@ -59,7 +59,9 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 }).promise()
 
 // react to chatbot commands
-awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
+awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null)
+=>
+{
   if (t === null || message == null)
     return
 
@@ -146,6 +148,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": 0}})
     zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: 0}})
     zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": 0}})
+    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: 0}})
+    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": 0}})
     awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
@@ -324,6 +328,7 @@ const thing_lookup = {
   "Kitchen old lights": "zwave_f2e55e6c_16",
   "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
+  "Garage lights": "zwave_f2e55e6c_23",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
 
