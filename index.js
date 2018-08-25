@@ -59,9 +59,7 @@ const set_alarm_state = state => iotdata.updateThingShadow({
 }).promise()
 
 // react to chatbot commands
-awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null)
-=>
-{
+awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic, "notify/out/+"), message = t ? message_parser(raw_message).toLowerCase() : null) => {
   if (t === null || message == null)
     return
 
@@ -142,9 +140,43 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
   }
 
+  // lights
+  if (message === messages.lights.toLowerCase())
+    notify_helper(t[0], `You can do these light things`, light_messages)
+
+  if (message === light_messages.lounge_1_on.toLowerCase())
+    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: true}})
+  if (message === light_messages.lounge_2_on.toLowerCase())
+    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": true}})
+  if (message === light_messages.kitchen_1_on.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 99}})
+  if (message === light_messages.kitchen_2_on.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: true}})
+  if (message === light_messages.kitchen_3_on.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": true}})
+  if (message === light_messages.garage_1_on.toLowerCase())
+    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: true}})
+  if (message === light_messages.garage_2_on.toLowerCase())
+    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": true}})
+
+  if (message === light_messages.lounge_1_off.toLowerCase())
+    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: false}})
+  if (message === light_messages.lounge_2_off.toLowerCase())
+    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": false}})
+  if (message === light_messages.kitchen_1_off.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 0}})
+  if (message === light_messages.kitchen_2_off.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: false}})
+  if (message === light_messages.kitchen_3_off.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": false}})
+  if (message === light_messages.garage_1_off.toLowerCase())
+    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: false}})
+  if (message === light_messages.garage_2_off.toLowerCase())
+    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": false}})
+
+  //all off
   if (message === messages.all_off.toLowerCase()) {
     zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: false}})
-    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: false}})
     zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": false}})
     zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: false}})
     zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": false}})
@@ -156,8 +188,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     notify_helper(t[0], "night night")
   }
 
-}
-)
+})
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
@@ -200,6 +231,7 @@ const messages = {
   cam_front: "Get front camera",
   cam_back: "Get back camera",
   all_off: "Bedtime everything off + arm home",
+  lights: "Lights",
   zwave: "Z-wave management"
 }
 
@@ -212,6 +244,26 @@ const zwave_messages = {
   zwave_heal: "Heal network",
   zwave_reset: "Soft reset controller",
   zwave_follow: "Follow events for 5 minutes"
+}
+
+const light_messages = {
+  start: "/start",
+  lounge_1_on: "Lounge On",
+  lounge_2_on: "Desk On",
+  kitchen_1_on: "Kitchen On",
+  kitchen_2_on: "Breakfast Bar On",
+  kitchen_3_on: "Sink On",
+  garage_1_on: "Patio On",
+  garage_2_on: "Garage On",
+
+  lounge_1_off: "Lounge Off",
+  lounge_2_off: "Desk Off",
+  kitchen_1_off: "Kitchen Off",
+  kitchen_2_off: "Breakfast Bar Off",
+  kitchen_3_off: "Sink Off",
+  garage_1_off: "Patio Off",
+  garage_2_off: "Garage Off",
+
 }
 
 const camera_map = {
@@ -326,7 +378,6 @@ const thing_lookup = {
   "Dining Room heating": "zwave_f2e55e6c_13",
   "Master bedroom radiator": "zwave_f2e55e6c_14",
   "Kitchen multisensor": "zwave_f2e55e6c_17",
-  "Kitchen old lights": "zwave_f2e55e6c_16",
   "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
   "Garage lights": "zwave_f2e55e6c_23",
