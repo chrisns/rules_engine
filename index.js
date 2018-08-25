@@ -174,6 +174,12 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.garage_2_off.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": false}})
 
+  if (message === light_messages.kitchen_1_on_25.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 25}})
+  if (message === light_messages.kitchen_1_on_50.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 50}})
+  if (message === light_messages.kitchen_1_on_75.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 75}})
   //all off
   if (message === messages.all_off.toLowerCase()) {
     zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: false}})
@@ -250,7 +256,10 @@ const light_messages = {
   start: "/start",
   lounge_1_on: "Lounge On",
   lounge_2_on: "Desk On",
-  kitchen_1_on: "Kitchen On",
+  kitchen_1_on: "Kitchen 100%",
+  kitchen_1_on_75: "Kitchen 75$",
+  kitchen_1_on_50: "Kitchen 50%",
+  kitchen_1_on_25: "Kitchen 25%",
   kitchen_2_on: "Breakfast Bar On",
   kitchen_3_on: "Sink On",
   garage_1_on: "Patio On",
