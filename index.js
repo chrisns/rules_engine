@@ -143,14 +143,15 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   }
 
   if (message === messages.all_off.toLowerCase()) {
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 0}})
-    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: 0}})
-    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": 0}})
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: 0}})
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": 0}})
-    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: 0}})
-    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": 0}})
+    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: false}})
+    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": false}})
     awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
+    reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
   }
