@@ -8,13 +8,21 @@ Feature: Heating schedule
     And the underfloor "Kitchen heating" should be 24°C
     And the underfloor "Dining Room heating" should be 24°C
 
+  Scenario: Evening setpoint
+    Given a clock tic
+    When the time is between "5pm" and "9pm"
+    And the alarm is not "Away"
+    Then the underfloor "Hallway heating" should be 26°C
+    And the underfloor "Kitchen heating" should be 26°C
+    And the underfloor "Dining Room heating" should be 28°C
+
   Scenario: Nighttime setpoint
     Given a clock tic
     When the time is between "9pm" and "11:59pm"
     And the alarm is not "Away"
-    Then the underfloor "Hallway heating" should be 26°C
-    And the underfloor "Kitchen heating" should be 26°C
-    And the underfloor "Dining Room heating" should be 26°C
+    Then the underfloor "Hallway heating" should be 15°C
+    And the underfloor "Kitchen heating" should be 16°C
+    And the underfloor "Dining Room heating" should be 16°C
 
   Scenario: Away eco-mode
     Given the alarm state changes to "Away"
