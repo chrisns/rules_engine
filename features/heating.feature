@@ -4,24 +4,24 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "6am" and "5pm"
     And the alarm is not "Away"
-    Then the underfloor "Hallway heating" should be 12°C
-    And the underfloor "Kitchen heating" should be 20°C
-    And the underfloor "Dining Room heating" should be 20°C
+    Then the underfloor "Hallway heating" should be 24°C
+    And the underfloor "Kitchen heating" should be 24°C
+    And the underfloor "Dining Room heating" should be 24°C
 
   Scenario: Nighttime setpoint
     Given a clock tic
     When the time is between "9pm" and "11:59pm"
     And the alarm is not "Away"
-    Then the underfloor "Hallway heating" should be 12°C
-    And the underfloor "Kitchen heating" should be 12°C
-    And the underfloor "Dining Room heating" should be 12°C
+    Then the underfloor "Hallway heating" should be 26°C
+    And the underfloor "Kitchen heating" should be 26°C
+    And the underfloor "Dining Room heating" should be 26°C
 
   Scenario: Away eco-mode
     Given the alarm state changes to "Away"
-    Then the underfloor "Hallway heating" should be 7°C
-    And the underfloor "Kitchen heating" should be 7°C
-    And the underfloor "Dining Room heating" should be 7°C
-    Then the underfloor "Loft en-suite heating" should be 7°C
+    Then the underfloor "Hallway heating" should be 10°C
+    And the underfloor "Kitchen heating" should be 10°C
+    And the underfloor "Dining Room heating" should be 10°C
+    Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Loft en-suite morning
     Given a clock tic
@@ -38,23 +38,26 @@ Feature: Heating schedule
   Scenario: Loft en-suite day
     Given a clock tic
     When the time is between "8am" and "1pm"
-    Then the underfloor "Loft en-suite heating" should be 7°C
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 14°C
 
   Scenario: Loft en-suite after evening shower
     Given a clock tic
     When the time is between "6pm" and "7pm"
-    Then the underfloor "Loft en-suite heating" should be 7°C
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 14°C
 
   Scenario: Loft en-suite bedtime
     Given a clock tic
     When the time is between "9pm" and "10pm"
     And the alarm is not "Away"
-    Then the underfloor "Loft en-suite heating" should be 35°C
+    Then the underfloor "Loft en-suite heating" should be 28°C
 
   Scenario: Loft en-suite after bedtime
     Given a clock tic
     When the time is between "10pm" and "11pm"
-    Then the underfloor "Loft en-suite heating" should be 7°C
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
     Given the "Hallway heating" is reporting config "Temperature sensor" not "F  - Floor mode"
