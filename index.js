@@ -24,10 +24,10 @@ const iotdata = new AWS.IotData({
   logger: console
 })
 
-const rekognition = new AWS.Rekognition({
-  region: "eu-west-1",
-  logger: console
-})
+// const rekognition = new AWS.Rekognition({
+//   region: "eu-west-1",
+//   logger: console
+// })
 
 const s3 = new AWS.S3({
   logger: console
@@ -212,15 +212,15 @@ const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
     }).promise())
     .then(() => s3.getSignedUrl("getObject", {Bucket: "me.cns.p.cams", Key: `${inst_uuid}.jpg`}))
     .then(signedurl => notify_helper(who, null, null, true, signedurl))
-    .then(() => rekognition.detectLabels({
-      Image: {
-        Bytes: imageBody,
-      },
-      MaxLabels: 20,
-      MinConfidence: 70
-    }).promise())
-    .then(labels => labels.Labels.map(label => label.Name))
-    .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
+    // .then(() => rekognition.detectLabels({
+    //   Image: {
+    //     Bytes: imageBody,
+    //   },
+    //   MaxLabels: 20,
+    //   MinConfidence: 70
+    // }).promise())
+    // .then(labels => labels.Labels.map(label => label.Name))
+    // .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
 
