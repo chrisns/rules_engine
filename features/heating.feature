@@ -30,6 +30,7 @@ Feature: Heating schedule
     And the underfloor "Kitchen heating" should be 10°C
     And the underfloor "Dining Room heating" should be 10°C
     Then the underfloor "Loft en-suite heating" should be 10°C
+    Then the underfloor "Family bathroom heating" should be 10°C
 
   Scenario: Loft en-suite morning
     Given a clock tic
@@ -66,6 +67,18 @@ Feature: Heating schedule
     When the time is between "10pm" and "11pm"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 16°C
+
+  Scenario: Family bathroom evening baths
+    Given a clock tic
+    When the time is between "4pm" and "7pm"
+    And the alarm is not "Away"
+    Then the underfloor "Family bathroom heating" should be 28°C
+
+  Scenario: Family bathroom nighttime
+    Given a clock tic
+    When the time is between "7pm" and "11pm"
+    And the alarm is not "Away"
+    Then the underfloor "Family bathroom heating" should be 10°C
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
     Given the "Hallway heating" is reporting config "Temperature sensor" not "F  - Floor mode"
