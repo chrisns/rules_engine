@@ -38,6 +38,7 @@ const awsTopics = [
   "$aws/things/alarm_status/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_10/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -401,6 +402,11 @@ rulesAdd("the {string} is reporting {string} - {string} less than {int}", async 
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported[genre.toLowerCase()][label] !== value
+)
+
+rulesAdd("the {string} {string} is turned {word}", async (device, field, state, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported.user[field] === (state === "on")
 )
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
