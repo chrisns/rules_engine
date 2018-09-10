@@ -258,7 +258,7 @@ const light_messages = {
   lounge_1_on: "Lounge On",
   lounge_2_on: "Desk On",
   kitchen_1_on: "Kitchen 100%",
-  kitchen_1_on_75: "Kitchen 75$",
+  kitchen_1_on_75: "Kitchen 75%",
   kitchen_1_on_50: "Kitchen 50%",
   kitchen_1_on_25: "Kitchen 25%",
   kitchen_2_on: "Breakfast Bar On",
