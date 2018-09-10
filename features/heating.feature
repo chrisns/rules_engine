@@ -4,6 +4,7 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "6am" and "5pm"
     And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 24°C
     And the underfloor "Kitchen heating" should be 24°C
     And the underfloor "Dining Room heating" should be 24°C
@@ -12,6 +13,7 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "5pm" and "9pm"
     And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 26°C
     And the underfloor "Kitchen heating" should be 26°C
     And the underfloor "Dining Room heating" should be 28°C
@@ -20,9 +22,17 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "9pm" and "11:59pm"
     And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 15°C
     And the underfloor "Kitchen heating" should be 16°C
     And the underfloor "Dining Room heating" should be 16°C
+
+  Scenario: Open door eco-mode
+    Given the alarm readiness changes to "not-ready"
+    Then the underfloor "Hallway heating" should be 10°C
+    And the underfloor "Kitchen heating" should be 10°C
+    And the underfloor "Dining Room heating" should be 10°C
+    Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Away eco-mode
     Given the alarm state changes to "Away"
@@ -36,36 +46,28 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "5:30am" and "7am"
     And the alarm is not "Away"
-    Then the underfloor "Loft en-suite heating" should be 35°C
-
-  Scenario: Loft en-suite evening shower
-    Given a clock tic
-    When the time is between "4:30pm" and "6pm"
-    And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 35°C
 
   Scenario: Loft en-suite day
     Given a clock tic
     When the time is between "8am" and "1pm"
     And the alarm is not "Away"
-    Then the underfloor "Loft en-suite heating" should be 14°C
-
-  Scenario: Loft en-suite after evening shower
-    Given a clock tic
-    When the time is between "6pm" and "7pm"
-    And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 14°C
 
   Scenario: Loft en-suite bedtime
     Given a clock tic
     When the time is between "9pm" and "10pm"
     And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 28°C
 
   Scenario: Loft en-suite after bedtime
     Given a clock tic
     When the time is between "10pm" and "11pm"
     And the alarm is not "Away"
+    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths

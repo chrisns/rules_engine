@@ -339,6 +339,8 @@ rulesAdd("the alarm state changes to {string}", (state, event) =>
 
 rulesAdd("the alarm is not {string}", async state => await get_alarm_state() !== state)
 
+rulesAdd("the alarm readiness is {string}", async state => await get_alarm_ready_status() !== (state ? "Ready" : "not-ready"))
+
 rulesAdd("the alarm is {string}", async state => await get_alarm_state() === state)
 
 rulesAdd("the {string} speaker says {string}", (speaker, message) => say_helper(speaker, message))
@@ -402,6 +404,11 @@ rulesAdd("the {string} is reporting {string} - {string} less than {int}", async 
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported[genre.toLowerCase()][label] !== value
+)
+
+rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
+  event.topic === `$aws/things/alarm_status/shadow/update/documents` &&
+  event.message.current.state.reported.ready_status === (readiness === "ready")
 )
 
 rulesAdd("the {string} {string} is turned {word}", async (device, field, state, event) =>
