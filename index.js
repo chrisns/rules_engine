@@ -7,8 +7,8 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 const Date = require("sugar-date").Date
 
-const {AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID} = process.env
-const {rulesAdd, eventHandler, pickleGherkin} = require("./rules")
+const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID } = process.env
+const { rulesAdd, eventHandler, pickleGherkin } = require("./rules")
 const fs = require("fs")
 const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
 
@@ -44,19 +44,19 @@ const awsTopics = [
 ]
 
 awsMqttClient.on("connect", () => awsMqttClient.subscribe(awsTopics,
-  {qos: 1},
+  { qos: 1 },
   (err, granted) => console.log("aws", err, granted)
 ))
 
-const get_alarm_state = () => iotdata.getThingShadow({thingName: "alarm_status"}).promise()
+const get_alarm_state = () => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
   .then(thing => JSON.parse(thing.payload).state.reported.state)
 
-const get_alarm_ready_status = () => iotdata.getThingShadow({thingName: "alarm_status"}).promise()
+const get_alarm_ready_status = () => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
   .then(thing => JSON.parse(thing.payload).state.reported.ready_status)
 
 const set_alarm_state = state => iotdata.updateThingShadow({
   thingName: "alarm_status",
-  payload: JSON.stringify({state: {desired: {state: state}}})
+  payload: JSON.stringify({ state: { desired: { state: state } } })
 }).promise()
 
 // react to chatbot commands
@@ -69,7 +69,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.unlock_door.toLowerCase())
     iotdata.updateThingShadow({
       thingName: "zwave_f2e55e6c_4",
-      payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
+      payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
     }).promise()
 
   if (message === messages.arm_alarm_home.toLowerCase()) {
@@ -117,25 +117,25 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     notify_helper(t[0], `You can do these zwave things`, zwave_messages)
 
   if (message === zwave_messages.zwave_secureadd.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {secureAddNode: random_number()})
+    zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
 
   if (message === zwave_messages.zwave_add.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {addNode: random_number()})
+    zwave_helper("zwave_f2e55e6c", { addNode: random_number() })
 
   if (message === zwave_messages.zwave_cancel.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {cancelControllerCommand: random_number()})
+    zwave_helper("zwave_f2e55e6c", { cancelControllerCommand: random_number() })
 
   if (message === zwave_messages.zwave_remove.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {removeNode: random_number()})
+    zwave_helper("zwave_f2e55e6c", { removeNode: random_number() })
 
   if (message === zwave_messages.zwave_heal.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {healNetwork: random_number()})
+    zwave_helper("zwave_f2e55e6c", { healNetwork: random_number() })
 
   if (message === zwave_messages.zwave_reset.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", {softReset: random_number()})
+    zwave_helper("zwave_f2e55e6c", { softReset: random_number() })
 
   if (message === zwave_messages.zwave_follow.toLowerCase()) {
-    awsMqttClient.subscribe("zwave/log", {qos: 1},
+    awsMqttClient.subscribe("zwave/log", { qos: 1 },
       (err, granted) => console.log("aws", err, granted)
     )
     setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
@@ -146,49 +146,49 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     notify_helper(t[0], `You can do these light things`, light_messages)
 
   if (message === light_messages.lounge_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: true}})
+    zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: true } })
   if (message === light_messages.lounge_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": true}})
+    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": true } })
   if (message === light_messages.kitchen_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 99}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 99 } })
   if (message === light_messages.kitchen_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: true}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: true } })
   if (message === light_messages.kitchen_3_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": true}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": true } })
   if (message === light_messages.garage_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: true}})
+    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: true } })
   if (message === light_messages.garage_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": true}})
+    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": true } })
 
   if (message === light_messages.lounge_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
   if (message === light_messages.lounge_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
   if (message === light_messages.kitchen_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 0}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 0 } })
   if (message === light_messages.kitchen_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
   if (message === light_messages.kitchen_3_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
   if (message === light_messages.garage_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: false}})
+    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
   if (message === light_messages.garage_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
 
   if (message === light_messages.kitchen_1_on_25.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 25}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
   if (message === light_messages.kitchen_1_on_50.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 50}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })
   if (message === light_messages.kitchen_1_on_75.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: 75}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 75 } })
   //all off
   if (message === messages.all_off.toLowerCase()) {
-    zwave_helper(thing_lookup["Kitchen lights"], {user: {Level: false}})
-    zwave_helper(thing_lookup["Lounge lights"], {user: {"Switch-1": false}})
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {Switch: false}})
-    zwave_helper(thing_lookup["Kitchen counter lights"], {user: {"Switch-1": false}})
-    zwave_helper(thing_lookup["Garage lights"], {user: {Switch: false}})
-    zwave_helper(thing_lookup["Garage lights"], {user: {"Switch-1": false}})
+    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: false } })
+    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
+    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
+    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
+    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
     awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
     reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
@@ -200,10 +200,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
 const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
-  iotdata.getThingShadow({thingName: camera}).promise()
+  iotdata.getThingShadow({ thingName: camera }).promise()
     .then(thing => JSON.parse(thing.payload).state.reported.jpg)
 
-    .then(camera_url => request({uri: camera_url, encoding: null}))
+    .then(camera_url => request({ uri: camera_url, encoding: null }))
     .then(body => imageBody = body)
     .then(() => s3.putObject({
       Body: imageBody,
@@ -211,17 +211,17 @@ const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
       ContentType: "image/jpeg",
       Bucket: "me.cns.p.cams"
     }).promise())
-    .then(() => s3.getSignedUrl("getObject", {Bucket: "me.cns.p.cams", Key: `${inst_uuid}.jpg`}))
+    .then(() => s3.getSignedUrl("getObject", { Bucket: "me.cns.p.cams", Key: `${inst_uuid}.jpg` }))
     .then(signedurl => notify_helper(who, null, null, true, signedurl))
-    // .then(() => rekognition.detectLabels({
-    //   Image: {
-    //     Bytes: imageBody,
-    //   },
-    //   MaxLabels: 20,
-    //   MinConfidence: 70
-    // }).promise())
-    // .then(labels => labels.Labels.map(label => label.Name))
-    // .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
+// .then(() => rekognition.detectLabels({
+//   Image: {
+//     Bytes: imageBody,
+//   },
+//   MaxLabels: 20,
+//   MinConfidence: 70
+// }).promise())
+// .then(labels => labels.Labels.map(label => label.Name))
+// .then(labels => notify_helper(who, `Possible contents: ${labels.join(", ")}`, null, true))
 
 const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_status => notify_helper(who, `Alarm is currently${ready_status ? " " : " not "}ready to arm`, null, true))
 
@@ -300,9 +300,9 @@ const message_parser = message => {
 }
 
 const zwave_helper = (thing, state) => iotdata.updateThingShadow({
-    thingName: thing,
-    payload: JSON.stringify({state: {desired: state}})
-  }
+  thingName: thing,
+  payload: JSON.stringify({ state: { desired: state } })
+}
 ).promise()
 
 const notify_helper = (who, message, actions = null, disableNotification = false, image = null) =>
@@ -311,11 +311,11 @@ const notify_helper = (who, message, actions = null, disableNotification = false
     message: message,
     image: image,
     buttons: actions ? _.map(actions, action => {
-      return {title: action, value: action}
+      return { title: action, value: action }
     }) : null
   }))
 
-const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), {qos: 0})
+const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), { qos: 0 })
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
 
@@ -379,7 +379,7 @@ const calculate_time = (number, measure) => {
   }
 }
 
-const clock_tic = setInterval(() => eventHandler({topic: "clock tic"}), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
+const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
 
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
@@ -397,7 +397,7 @@ const thing_lookup = {
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
-  await iotdata.getThingShadow({thingName: thing_lookup[device]}).promise()
+  await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
     .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
 )
 
@@ -418,18 +418,18 @@ rulesAdd("the {string} {string} is turned {word}", async (device, field, state, 
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
 
-rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], {[genre]: {[setting]: value}}))
+rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: value } }))
 
 rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported.user.Burglar === 8 &&
   event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
 
-rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), {qos: 0}))
+rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
 
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
-rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], {user: {Heating: temp}}))
+rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { Heating: temp } }))
 
 rulesAdd("a delay of {int} {word}", async (number, measure) =>
   new Promise(resolve => setTimeout(resolve, calculate_time(number, measure.toLowerCase()))))
@@ -448,11 +448,11 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
 
 rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
   thingName: "zwave_f2e55e6c_4",
-  payload: JSON.stringify({state: {desired: {user: {Locked: 0}}}})
+  payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
 }).promise())
 
 awsMqttClient.on("message", (topic, message) =>
-  eventHandler({topic: topic, message: message_parser(message)}))
+  eventHandler({ topic: topic, message: message_parser(message) }))
 
 // pickling needs to be done after adding all the rules
 console.log(gherkin)
