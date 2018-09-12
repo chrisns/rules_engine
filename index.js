@@ -159,6 +159,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Garage lights"], { user: { Switch: true } })
   if (message === light_messages.garage_2_on.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.entry_light_1_on.toLowerCase())
+    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: true } })
+  if (message === light_messages.entry_light_2_on.toLowerCase())
+    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
 
   if (message === light_messages.lounge_1_off.toLowerCase())
     zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
@@ -174,6 +178,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
   if (message === light_messages.garage_2_off.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.entry_light_1_off.toLowerCase())
+    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
+  if (message === light_messages.entry_light_2_off.toLowerCase())
+    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
 
   if (message === light_messages.kitchen_1_on_25.toLowerCase())
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
@@ -189,6 +197,9 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
     zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
+    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
+    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+
     awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
     reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
@@ -265,6 +276,8 @@ const light_messages = {
   kitchen_3_on: "Sink On",
   garage_1_on: "Patio On",
   garage_2_on: "Garage On",
+  entry_light_1_on: "Hallway light on",
+  entry_light_2_on: "Front house light on",
 
   lounge_1_off: "Lounge Off",
   lounge_2_off: "Desk Off",
@@ -273,7 +286,8 @@ const light_messages = {
   kitchen_3_off: "Sink Off",
   garage_1_off: "Patio Off",
   garage_2_off: "Garage Off",
-
+  entry_light_1_off: "Hallway light on",
+  entry_light_2_off: "Front house light on",
 }
 
 const camera_map = {
@@ -384,6 +398,7 @@ const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calcul
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
   "Family bathroom heating": "zwave_f2e55e6c_21",
+  "Entry lighting": "zwave_f2e55e6c_24",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Loft en-suite heating": "zwave_f2e55e6c_19",
