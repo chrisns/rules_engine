@@ -49,7 +49,7 @@ Feature: Location based events
     Then the "Entry lights" user "Switch-1" should be off
 
   Scenario: Hannah arrives home after dark
-    Given cnsiphone arrives home
+    Given hnsiphone arrives home
     And the current time is after sunset
     Then the "Entry lights" user "Switch" should be on
     Then the "Entry lights" user "Switch-1" should be on
