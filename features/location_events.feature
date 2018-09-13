@@ -32,10 +32,10 @@ Feature: Location based events
     When the alarm is not "Disarm"
     And the alarm state should be "Disarm"
 
-  Scenario: Chris arrives disarm alarm
+  Scenario: Chris arrives unlock door
     Given cnsiphone arrives home
     Then the front door is unlocked
 
-  Scenario: Hannah arrives disarm alarm
+  Scenario: Hannah arrives unlock door
     Given hnsiphone arrives home
     Then the front door is unlocked
