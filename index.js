@@ -416,6 +416,16 @@ rulesAdd("the {string} is reporting {string} - {string} less than {int}", async 
     .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
 )
 
+rulesAdd("the current time is before sun{word}", async (sunstate, event) =>
+  await iotdata.getThingShadow({ thingName: 'weather_daily' }).promise()
+    .then(thing => JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`]) < new Date() / 1000
+)
+
+rulesAdd("the current time is after sun{word}", async (sunstate, event) =>
+  await iotdata.getThingShadow({ thingName: 'weather_daily' }).promise()
+    .then(thing => JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`]) > new Date() / 1000
+)
+
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported[genre.toLowerCase()][label] !== value
@@ -434,6 +444,8 @@ rulesAdd("the {string} {string} is turned {word}", async (device, field, state, 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
 
 rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: value } }))
+
+rulesAdd("the {string} {word} {string} should be {word}", (device, genre, setting, on_off) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: on_off === "on" } }))
 
 rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&

@@ -39,3 +39,19 @@ Feature: Location based events
   Scenario: Hannah arrives unlock door
     Given hnsiphone arrives home
     Then the front door is unlocked
+
+  Scenario: Chris arrives home after dark
+    Given cnsiphone arrives home
+    And the current time is after sunset
+    Then the "Entry lights" user "Switch" should be on
+    Then the "Entry lights" user "Switch-1" should be on
+    Then a delay of 15 minutes
+    Then the "Entry lights" user "Switch-1" should be off
+
+  Scenario: Hannah arrives home after dark
+    Given cnsiphone arrives home
+    And the current time is after sunset
+    Then the "Entry lights" user "Switch" should be on
+    Then the "Entry lights" user "Switch-1" should be on
+    Then a delay of 15 minutes
+    Then the "Entry lights" user "Switch-1" should be off
