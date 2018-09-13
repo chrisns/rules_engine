@@ -286,8 +286,8 @@ const light_messages = {
   kitchen_3_off: "Sink Off",
   garage_1_off: "Patio Off",
   garage_2_off: "Garage Off",
-  entry_light_1_off: "Hallway light on",
-  entry_light_2_off: "Front house light on",
+  entry_light_1_off: "Hallway light off",
+  entry_light_2_off: "Front house light off",
 }
 
 const camera_map = {
