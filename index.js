@@ -39,6 +39,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_10/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -390,6 +391,7 @@ const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calcul
 const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
   "Family bathroom heating": "zwave_f2e55e6c_21",
+  "Family bathroom flood sensor": "zwave_f2e55e6c_25",
   "Entry lighting": "zwave_f2e55e6c_24",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
