@@ -6,6 +6,7 @@ const AWS = require("aws-sdk")
 const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 const Date = require("sugar-date").Date
+const memoize = require("memoizee")
 
 const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID } = process.env
 const { rulesAdd, eventHandler, pickleGherkin } = require("./rules")
@@ -49,8 +50,8 @@ awsMqttClient.on("connect", () => awsMqttClient.subscribe(awsTopics,
   (err, granted) => console.log("aws", err, granted)
 ))
 
-const get_alarm_state = () => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
-  .then(thing => JSON.parse(thing.payload).state.reported.state)
+const get_alarm_state = memoize(() => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
+  .then(thing => JSON.parse(thing.payload).state.reported.state), { maxAge: 1000, length: 0 })
 
 const get_alarm_ready_status = () => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
   .then(thing => JSON.parse(thing.payload).state.reported.ready_status)

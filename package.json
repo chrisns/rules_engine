@@ -15,6 +15,7 @@
     "aws-sdk": "^2.176.0",
     "cucumber": "^4.1.0",
     "lodash": "^4.17.4",
+    "memoizee": "^0.4.14",
     "mqtt-wildcard": "^3.0.9",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
