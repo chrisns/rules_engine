@@ -134,13 +134,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === zwave_messages.zwave_reset.toLowerCase())
     zwave_helper("zwave_f2e55e6c", { softReset: random_number() })
 
-  if (message === zwave_messages.zwave_follow.toLowerCase()) {
-    awsMqttClient.subscribe("zwave/log", { qos: 1 },
-      (err, granted) => console.log("aws", err, granted)
-    )
-    setTimeout(awsMqttClient.unsubscribe, 5 * 60 * 1000, "zwave/log")
-  }
-
   // lights
   if (message === messages.lights.toLowerCase())
     notify_helper(t[0], `You can do these light things`, light_messages)
@@ -261,7 +254,6 @@ const zwave_messages = {
   zwave_remove: "Remove device",
   zwave_heal: "Heal network",
   zwave_reset: "Soft reset controller",
-  zwave_follow: "Follow events for 5 minutes"
 }
 
 const light_messages = {
@@ -464,8 +456,6 @@ rulesAdd("a delay of {int} {word}", async (number, measure) =>
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
 rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
-
-rulesAdd("a zwave log message is received", event => event.topic === "zwave/log")
 
 rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_MAP[who.toLowerCase()], `zwave ${event.message.homeid} ${JSON.stringify(event.message.log)}`))
 
