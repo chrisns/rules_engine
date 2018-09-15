@@ -32,7 +32,6 @@ Feature: Heating schedule
     Then the underfloor "Hallway heating" should be 10°C
     And the underfloor "Kitchen heating" should be 10°C
     And the underfloor "Dining Room heating" should be 10°C
-    Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Away eco-mode
     Given the alarm state changes to "Away"
@@ -44,9 +43,8 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite morning
     Given a clock tic
-    When the time is between "5:30am" and "7am"
+    When the time is between "5am" and "7am"
     And the alarm is not "Away"
-    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 35°C
 
   Scenario: Loft en-suite day
@@ -65,7 +63,7 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite after bedtime
     Given a clock tic
-    When the time is between "10pm" and "11pm"
+    When the time is between "10:30pm" and "11:30pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 16°C
@@ -74,7 +72,7 @@ Feature: Heating schedule
     Given a clock tic
     When the time is between "4pm" and "7pm"
     And the alarm is not "Away"
-    Then the underfloor "Family bathroom heating" should be 28°C
+    Then the underfloor "Family bathroom heating" should be 35°C
 
   Scenario: Family bathroom nighttime
     Given a clock tic
