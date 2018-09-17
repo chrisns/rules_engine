@@ -29,3 +29,14 @@ Feature: Alarm status changes
     When the "Garage lights" "Switch-1" is turned on
     And the alarm is "Disarm"
     Then the "Garage" speaker says "Alarm is disarmed"
+
+  Scenario: Alarm is armed away close the velux window
+    Given the alarm state changes to "Away"
+    Then the velux scene "Loft Blind 0" is activated
+    And the velux scene "Loft Window 0" is activated
+
+  Scenario: Alarm is disarmed open the loft blind
+    Given the alarm state changes to "Away"
+    And the current time is after sunrise
+    And the current time is before sunset
+    Then the velux scene "Loft Blind 100" is activated

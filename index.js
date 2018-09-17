@@ -114,6 +114,30 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     get_alarm_state()
       .then(state => notify_helper(t[0], state))
 
+  // velux
+  if (message === velux_messages.velux_blind_100.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
+
+  if (message === velux_messages.velux_blind_0.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Blind 0', { qos: 0 })
+
+  if (message === velux_messages.velux_window_25.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Window 25', { qos: 0 })
+
+  if (message === velux_messages.velux_window_50.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Window 50', { qos: 0 })
+
+  if (message === velux_messages.velux_window_75.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Window 75', { qos: 0 })
+
+  if (message === velux_messages.velux_window_100.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Window 100', { qos: 0 })
+  if (message === velux_messages.velux_window_vent.toLowerCase())
+    awsMqttClient.publish('velux', 'Loft Window vent', { qos: 0 })
+
+  if (message === zwave_messages.zwave_secureadd.toLowerCase())
+    zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
+
   // zwave
   if (message === messages.zwave.toLowerCase())
     notify_helper(t[0], `You can do these zwave things`, zwave_messages)
@@ -184,6 +208,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })
   if (message === light_messages.kitchen_1_on_75.toLowerCase())
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 75 } })
+
   //all off
   if (message === messages.all_off.toLowerCase()) {
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: false } })
@@ -256,6 +281,18 @@ const zwave_messages = {
   zwave_remove: "Remove device",
   zwave_heal: "Heal network",
   zwave_reset: "Soft reset controller",
+}
+
+const velux_messages = {
+  start: "/start",
+  velux_blind_100: "Loft Blind open",
+  velux_blind_0: "Loft Blind closed",
+  velux_window_100: "Loft Window 100% Open",
+  velux_window_75: "Loft Window 75% Open",
+  velux_window_50: "Loft Window 50% Open",
+  velux_window_25: "Loft Window 25% Open",
+  velux_window_0: "Loft Window Closed",
+  velux_window_vent: "Loft Window vent open",
 }
 
 const light_messages = {
@@ -443,6 +480,8 @@ rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
 
 rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
+
+rulesAdd("the velux scene {string} is activated", (scene) => awsMqttClient.publish('velux', scene, { qos: 0 }))
 
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
