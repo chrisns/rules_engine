@@ -115,28 +115,22 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
       .then(state => notify_helper(t[0], state))
 
   // velux
+  if (message === messages.velux_messages.toLowerCase())
+    notify_helper(t[0], `You can do these velux things`, velux_messages)
   if (message === velux_messages.velux_blind_100.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
-
   if (message === velux_messages.velux_blind_0.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Blind 0', { qos: 0 })
-
   if (message === velux_messages.velux_window_25.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Window 25', { qos: 0 })
-
   if (message === velux_messages.velux_window_50.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Window 50', { qos: 0 })
-
   if (message === velux_messages.velux_window_75.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Window 75', { qos: 0 })
-
   if (message === velux_messages.velux_window_100.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Window 100', { qos: 0 })
   if (message === velux_messages.velux_window_vent.toLowerCase())
     awsMqttClient.publish('velux', 'Loft Window vent', { qos: 0 })
-
-  if (message === zwave_messages.zwave_secureadd.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
 
   // zwave
   if (message === messages.zwave.toLowerCase())
@@ -270,6 +264,7 @@ const messages = {
   cam_back: "Get back camera",
   all_off: "Bedtime everything off + arm home",
   lights: "Lights",
+  velux_messages: "Velux",
   zwave: "Z-wave management"
 }
 
