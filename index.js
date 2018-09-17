@@ -411,14 +411,9 @@ rulesAdd("the {string} is reporting {string} - {string} less than {int}", async 
     .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
 )
 
-rulesAdd("the current time is before sun{word}", async (sunstate, event) =>
+rulesAdd("the current time is {word} sun{word}", async (ba, sunstate, event) =>
   await iotdata.getThingShadow({ thingName: 'weather_daily' }).promise()
-    .then(thing => JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`]) < new Date() / 1000
-)
-
-rulesAdd("the current time is after sun{word}", async (sunstate, event) =>
-  await iotdata.getThingShadow({ thingName: 'weather_daily' }).promise()
-    .then(thing => JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`]) > new Date() / 1000
+    .then(thing => Date()[`is${_.upperFirst(ba)}`](JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`] * 1000))
 )
 
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
