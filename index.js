@@ -495,6 +495,8 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
 
+rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({state: {desired: {hvac_mode: mode}}}), { qos: 0 }))
+
 rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
   thingName: "zwave_f2e55e6c_4",
   payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
