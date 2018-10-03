@@ -47,7 +47,6 @@ Feature: Location based events
     Then the "Entry lighting" user "Switch-1" should be on
     Then the "Garage lights" user "Switch-1" should be on
     Then a delay of 5 minutes
-    Then the "Entry lighting" user "Switch-1" should be off
     Then the "Garage lights" user "Switch-1" should be off
 
   Scenario: Hannah arrives home after dark
@@ -57,4 +56,3 @@ Feature: Location based events
     Then the "Entry lighting" user "Switch-1" should be on
     Then a delay of 5 minutes
     Then the "Entry lighting" user "Switch-1" should be off
-    
