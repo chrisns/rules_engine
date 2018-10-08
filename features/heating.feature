@@ -78,13 +78,13 @@ Scenario: Normal Nest mode setting
 
   Scenario: Family bathroom evening baths
     Given a clock tic
-    When the time is between "4pm" and "7pm"
+    When the time is between "4pm" and "6pm"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 35°C
 
   Scenario: Family bathroom nighttime
     Given a clock tic
-    When the time is between "7pm" and "11pm"
+    When the time is between "6pm" and "11pm"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 10°C
 
