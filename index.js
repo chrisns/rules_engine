@@ -205,22 +205,24 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   //all off
   if (message === messages.all_off.toLowerCase()) {
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: false } })
-    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
-    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
-    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
-    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
-    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
-
-    awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
+    all_off()
     reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
   }
-
 })
+
+const all_off = () => {
+  zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: false } })
+  zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+  awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
+}
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
@@ -486,6 +488,9 @@ rulesAdd("a delay of {int} {word}", async (number, measure) =>
   new Promise(resolve => setTimeout(resolve, calculate_time(number, measure.toLowerCase()))))
 
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
+
+
+rulesAdd("turn everything off", () => all_off())
 
 rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
 

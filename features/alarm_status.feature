@@ -40,3 +40,7 @@ Feature: Alarm status changes
     And the current time is after sunrise
     And the current time is before sunset
     Then the velux scene "Loft Blind 100" is activated
+
+  Scenario: Alarm is armed away turn everything off
+    Given the alarm state changes to "Away"
+    Then turn everything off
