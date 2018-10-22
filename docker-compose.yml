@@ -25,7 +25,3 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_IOT_ENDPOINT_HOST=${AWS_IOT_ENDPOINT_HOST}
       - AWS_REGION=${AWS_REGION}
-
-networks:
-  proxy:
-    external: true
