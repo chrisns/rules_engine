@@ -169,7 +169,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.kitchen_3_on.toLowerCase())
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": true } })
   if (message === light_messages.garage_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: true } })
+    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-2": true } })
   if (message === light_messages.garage_2_on.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": true } })
   if (message === light_messages.entry_light_1_on.toLowerCase())
@@ -188,7 +188,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.kitchen_3_off.toLowerCase())
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
   if (message === light_messages.garage_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
+    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-2": false } })
   if (message === light_messages.garage_2_off.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
   if (message === light_messages.entry_light_1_off.toLowerCase())
@@ -217,7 +217,7 @@ const all_off = () => {
   zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
   zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
   zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-2": false } })
   zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
   zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
   zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
@@ -436,7 +436,7 @@ const thing_lookup = {
   "Kitchen multisensor": "zwave_f2e55e6c_17",
   "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
-  "Garage lights": "zwave_f2e55e6c_23",
+  "Garage lights": "zwave_f2e55e6c_26",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
 
@@ -500,7 +500,7 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
 
-rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({state: {desired: {hvac_mode: mode}}}), { qos: 0 }))
+rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
 rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
   thingName: "zwave_f2e55e6c_4",
