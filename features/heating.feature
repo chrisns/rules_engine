@@ -78,7 +78,7 @@ Feature: Heating schedule
 
   Scenario: Family bathroom evening baths
     Given a clock tic
-    When the time is between "4pm" and "6pm"
+    When the time is between "3:30pm" and "5:30pm"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 35°C
 
