@@ -2,7 +2,7 @@ Feature: Heating schedule
 
   Scenario: Daytime setpoint
     Given a clock tic
-    When the time is between "6am" and "5pm"
+    When the time is between "6am" and "3:59pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 24°C
@@ -11,7 +11,7 @@ Feature: Heating schedule
 
   Scenario: Evening setpoint
     Given a clock tic
-    When the time is between "5pm" and "9pm"
+    When the time is between "4pm" and "9pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 26°C
@@ -43,7 +43,7 @@ Feature: Heating schedule
     And the underfloor "Family bathroom heating" should be 10°C
     And the nest thermostat mode is set to eco
 
-Scenario: Normal Nest mode setting
+  Scenario: Normal Nest mode setting
     Given a clock tic
     And the alarm is not "Away"
     And the alarm readiness is "ready"
