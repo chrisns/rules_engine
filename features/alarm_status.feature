@@ -20,6 +20,10 @@ Feature: Alarm status changes
     Given the alarm state changes to "Away"
     Then a message reading "Alarm armed Away" is sent to "everyone"
 
+  Scenario: Alarm is armed away make sure vacuum stops
+    Given the alarm state changes to "Away"
+    Then the vacuum should stop
+
   Scenario: Someone turns on the garage lixght and the alarm is armed home
     When the "Garage lights" "Switch-1" is turned on
     And the alarm is "Home"

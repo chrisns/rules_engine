@@ -114,6 +114,12 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     get_alarm_state()
       .then(state => notify_helper(t[0], state))
 
+  // vacuum
+  if (message === messages.vacuum_start.toLowerCase())
+    vacuum_helper('start')
+  if (message === messages.vacuum_stop.toLowerCase())
+    vacuum_helper('stop')
+
   // velux
   if (message === messages.velux_messages.toLowerCase())
     notify_helper(t[0], `You can do these velux things`, velux_messages)
@@ -267,8 +273,11 @@ const messages = {
   all_off: "Bedtime everything off + arm home",
   lights: "Lights",
   velux_messages: "Velux",
-  zwave: "Z-wave management"
+  zwave: "Z-wave management",
+  vacuum_start: "Vacuum Start",
+  vacuum_stop: "Vacuum Stop"
 }
+
 
 const zwave_messages = {
   start: "/start",
@@ -340,6 +349,8 @@ const message_parser = message => {
     return message.toString()
   }
 }
+
+const vacuum_helper = action => awsMqttClient.publish(`ifttt-out/vacuum_${action}`, JSON.stringify({}), { qos: 0 })
 
 const zwave_helper = (thing, state) => iotdata.updateThingShadow({
   thingName: thing,
@@ -477,6 +488,8 @@ rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
 
 rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
+
+rulesAdd("the vacuum should {word}", vacuum_helper)
 
 rulesAdd("the velux scene {string} is activated", (scene) => awsMqttClient.publish('velux', scene, { qos: 0 }))
 
