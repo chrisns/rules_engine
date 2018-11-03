@@ -370,7 +370,7 @@ const notify_helper = (who, message, actions = null, disableNotification = false
 
 const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), { qos: 0 })
 
-const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 40 : 15
+const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 80 : 40
 
 awsMqttClient.on("connect", () => console.log("aws connected"))
 awsMqttClient.on("error", (error) => console.error("aws", error))
