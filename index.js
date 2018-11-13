@@ -468,6 +468,7 @@ rulesAdd("the {string} is reporting {word} {string} not {string}", async (device
 
 rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
   event.topic === `$aws/things/alarm_status/shadow/update/documents` &&
+  event.message.previous.state.reported.ready_status !== event.message.current.state.reported.ready_status &&
   event.message.current.state.reported.ready_status === (readiness === "ready")
 )
 

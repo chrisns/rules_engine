@@ -20,7 +20,6 @@ Feature: Location based events
     Given hnsiphone arrives home
     When the alarm is not "Away"
     Then the "Kitchen" speaker says "Mummy's home"
-    And the "Kitchen" speaker says "Daddy's home"
 
   Scenario: Chris arrives disarm alarm
     Given cnsiphone arrives home
