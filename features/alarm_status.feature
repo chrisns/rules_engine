@@ -24,13 +24,13 @@ Feature: Alarm status changes
     Given the alarm state changes to "Away"
     Then the vacuum should stop
 
-  Scenario: Someone turns on the garage lixght and the alarm is armed home
-    When the "Garage lights" "Switch-1" is turned on
+  Scenario: Someone turns on the garage light and the alarm is armed home
+    When the "Garage lights" "Switch" is turned on
     And the alarm is "Home"
     Then the "Garage" speaker says "Alarm is armed home"
 
   Scenario: Someone turns on the garage light and the alarm is disarmed
-    When the "Garage lights" "Switch-1" is turned on
+    When the "Garage lights" "Switch" is turned on
     And the alarm is "Disarm"
     Then the "Garage" speaker says "Alarm is disarmed"
 
