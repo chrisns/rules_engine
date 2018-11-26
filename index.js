@@ -311,8 +311,8 @@ const light_messages = {
   kitchen_1_on_25: "Kitchen 25%",
   kitchen_2_on: "Breakfast Bar On",
   kitchen_3_on: "Sink On",
-  garage_1_on: "Patio On",
-  garage_2_on: "Garage On",
+  garage_1_on: "Garage On",
+  garage_2_on: "Patio On",
   entry_light_1_on: "Hallway light on",
   entry_light_2_on: "Front house light on",
 
@@ -321,8 +321,8 @@ const light_messages = {
   kitchen_1_off: "Kitchen Off",
   kitchen_2_off: "Breakfast Bar Off",
   kitchen_3_off: "Sink Off",
-  garage_1_off: "Patio Off",
-  garage_2_off: "Garage Off",
+  garage_1_off: "Garage Off",
+  garage_2_off: "Patio Off",
   entry_light_1_off: "Hallway light off",
   entry_light_2_off: "Front house light off",
 }
