@@ -182,6 +182,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: true } })
   if (message === light_messages.entry_light_2_on.toLowerCase())
     zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
+  if (message === light_messages.fairy_garden_off.toLowerCase())
+    zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": true } })
 
   if (message === light_messages.lounge_1_off.toLowerCase())
     zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
@@ -201,6 +203,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
   if (message === light_messages.entry_light_2_off.toLowerCase())
     zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+  if (message === light_messages.fairy_garden_off.toLowerCase())
+    zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
 
   if (message === light_messages.kitchen_1_on_25.toLowerCase())
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
@@ -227,6 +231,7 @@ const all_off = () => {
   zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
   zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
   zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
 
@@ -315,6 +320,7 @@ const light_messages = {
   garage_2_on: "Patio On",
   entry_light_1_on: "Hallway light on",
   entry_light_2_on: "Front house light on",
+  fairy_garden_on: "Fairy garden on",
 
   lounge_1_off: "Lounge Off",
   lounge_2_off: "Desk Off",
@@ -325,6 +331,8 @@ const light_messages = {
   garage_2_off: "Patio Off",
   entry_light_1_off: "Hallway light off",
   entry_light_2_off: "Front house light off",
+  fairy_garden_off: "Fairy garden off",
+
 }
 
 const camera_map = {
@@ -447,6 +455,7 @@ const thing_lookup = {
   "Kitchen multisensor": "zwave_f2e55e6c_17",
   "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
+  "Fairy garden lights": "zwave_f2e55e6c_29",
   "Garage lights": "zwave_f2e55e6c_27",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
