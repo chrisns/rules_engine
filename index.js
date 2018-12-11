@@ -182,8 +182,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: true } })
   if (message === light_messages.entry_light_2_on.toLowerCase())
     zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
-  if (message === light_messages.fairy_garden_off.toLowerCase())
+  if (message === light_messages.fairy_garden_on.toLowerCase())
     zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": true } })
+  if (message === light_messages.noah_light_on.toLowerCase())
+    zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": true } })
 
   if (message === light_messages.lounge_1_off.toLowerCase())
     zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
@@ -205,6 +207,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
   if (message === light_messages.fairy_garden_off.toLowerCase())
     zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
+  if (message === light_messages.noah_light_off.toLowerCase())
+    zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": false } })
 
   if (message === light_messages.kitchen_1_on_25.toLowerCase())
     zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
@@ -321,6 +325,7 @@ const light_messages = {
   entry_light_1_on: "Hallway light on",
   entry_light_2_on: "Front house light on",
   fairy_garden_on: "Fairy garden on",
+  noah_light_on: "Noah light on",
 
   lounge_1_off: "Lounge Off",
   lounge_2_off: "Desk Off",
@@ -332,6 +337,7 @@ const light_messages = {
   entry_light_1_off: "Hallway light off",
   entry_light_2_off: "Front house light off",
   fairy_garden_off: "Fairy garden off",
+  noah_light_off: "Noah light off",
 
 }
 
@@ -447,6 +453,8 @@ const thing_lookup = {
   "Family bathroom heating": "zwave_f2e55e6c_21",
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
   "Entry lighting": "zwave_f2e55e6c_24",
+  "Loft lighting": "zwave_f2e55e6c_30",
+  "Noah lighting": "zwave_f2e55e6c_31",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Loft en-suite heating": "zwave_f2e55e6c_19",
