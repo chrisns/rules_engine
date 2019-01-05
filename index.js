@@ -227,15 +227,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 })
 
 const all_off = () => {
-  zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: false } })
-  zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": false } })
-  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
+  zwave_helper("zwave_f2e55e6c", { switchAllOff: random_number() })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
 
@@ -394,7 +386,7 @@ awsMqttClient.on("offline", () => console.log("aws offline"))
 rulesAdd("the {string} button is {string}", (thing, action, event) =>
   thing === "doorbell" &&
   event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
-  event.message.current.state.reported.basic.Basic === 0 &&
+  event.message.current.state.reported.basic.Basic === 1 &&
   event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic
 )
 
