@@ -446,7 +446,7 @@ const thing_lookup = {
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
   "Entry lighting": "zwave_f2e55e6c_24",
   "Loft lighting": "zwave_f2e55e6c_30",
-  "Noah lighting": "zwave_f2e55e6c_32",
+  "Noah lighting": "zwave_f2e55e6c_36",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Loft en-suite heating": "zwave_f2e55e6c_19",
@@ -456,7 +456,7 @@ const thing_lookup = {
   "Kitchen lights": "zwave_f2e55e6c_20",
   "Lounge lights": "zwave_f2e55e6c_15",
   "Fairy garden lights": "zwave_f2e55e6c_29",
-  "Garage lights": "zwave_f2e55e6c_27",
+  "Garage lights": "zwave_f2e55e6c_37",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
 }
 
