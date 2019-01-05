@@ -444,7 +444,7 @@ const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
   "Family bathroom heating": "zwave_f2e55e6c_21",
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
-  "Entry lighting": "zwave_f2e55e6c_24",
+  "Entry lighting": "zwave_f2e55e6c_38",
   "Loft lighting": "zwave_f2e55e6c_30",
   "Noah lighting": "zwave_f2e55e6c_36",
   "Hallway heating": "zwave_f2e55e6c_11",
