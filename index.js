@@ -386,7 +386,7 @@ awsMqttClient.on("offline", () => console.log("aws offline"))
 rulesAdd("the {string} button is {string}", (thing, action, event) =>
   thing === "doorbell" &&
   event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
-  event.message.current.state.reported.basic.Basic === 1 &&
+  event.message.current.state.reported.basic.Basic >= 1 &&
   event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic
 )
 
