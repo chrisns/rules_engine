@@ -45,10 +45,14 @@ const awsTopics = [
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
 
-awsMqttClient.on("connect", () => awsMqttClient.subscribe(awsTopics,
+awsMqttClient.on("connect", () => {
+  for (i = 0; i < awsTopics.length; i += 8) {
+    awsMqttClient.subscribe(awsTopics.slice(i, i + 8),
   { qos: 1 },
-  (err, granted) => console.log("aws", err, granted)
-))
+      (err, granted) => console.log("aws subscribe", err, granted)
+    )
+  }
+})
 
 const get_alarm_state = memoize(() => iotdata.getThingShadow({ thingName: "alarm_status" }).promise()
   .then(thing => JSON.parse(thing.payload).state.reported.state), { maxAge: 1000, length: 0 })
