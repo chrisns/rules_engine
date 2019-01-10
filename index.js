@@ -464,6 +464,7 @@ const thing_lookup = {
   "Garage lights": "zwave_f2e55e6c_37",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
   "Lounge light switch": "zwave_f2e55e6c_41",
+  "Lounge side lights": "zwave_f2e55e6c_42",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
