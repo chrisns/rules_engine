@@ -479,6 +479,12 @@ rulesAdd("the {string} is reporting {word} {string} not {string}", async (device
   event.message.current.state.reported[genre.toLowerCase()][label] !== value
 )
 
+rulesAdd("the {string} button {int} is pushed", async (device, buttonid, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported.user["Scene ID"] == buttonid &&
+  event.message.current.metadata.reported.user["Scene ID"].timestamp !== event.message.previous.metadata.reported.user["Scene ID"].timestamp
+)
+
 rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
   event.topic === `$aws/things/alarm_status/shadow/update/documents` &&
   event.message.previous.state.reported.ready_status !== event.message.current.state.reported.ready_status &&
