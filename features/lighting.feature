@@ -34,10 +34,10 @@ Feature: Lighting
   #lounge light switch
   Scenario: Button 1 is pushed on lounge light switch
     When the "Lounge light switch" button 1 is pushed
-    Then the "Lounge lights" user "Switch-1" should be off
-    Then the "Lounge lights" user "Switch" should be off
+    Then the "Lounge lights" user "Switch-1" should be on
+    Then the "Lounge lights" user "Switch" should be on
 
   Scenario: Button 5 is pushed on lounge light switch
     When the "Lounge light switch" button 5 is pushed
-    Then the "Lounge lights" user "Switch-1" should be on
-    Then the "Lounge lights" user "Switch" should be on
+    Then the "Lounge lights" user "Switch-1" should be off
+    Then the "Lounge lights" user "Switch" should be off
