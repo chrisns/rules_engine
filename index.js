@@ -41,6 +41,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -48,7 +49,7 @@ const awsTopics = [
 awsMqttClient.on("connect", () => {
   for (i = 0; i < awsTopics.length; i += 8) {
     awsMqttClient.subscribe(awsTopics.slice(i, i + 8),
-  { qos: 1 },
+      { qos: 1 },
       (err, granted) => console.log("aws subscribe", err, granted)
     )
   }
@@ -462,6 +463,7 @@ const thing_lookup = {
   "Fairy garden lights": "zwave_f2e55e6c_29",
   "Garage lights": "zwave_f2e55e6c_37",
   "Kitchen counter lights": "zwave_f2e55e6c_18",
+  "Lounge light switch": "zwave_f2e55e6c_41",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>

@@ -1,10 +1,10 @@
 Feature: Lighting
 
-#  Scenario: Someone walks in to the kitchen and its dark
-#    Given there is movement is detected on the "Kitchen multisensor"
-#    And the "Kitchen multisensor" is reporting "user" - "Luminance" less than 20
-#    And the "Kitchen lights" is reporting "user" - "Level" less than 1
-#    Then the "Kitchen lights" user "Level" should be "30"
+  #  Scenario: Someone walks in to the kitchen and its dark
+  #    Given there is movement is detected on the "Kitchen multisensor"
+  #    And the "Kitchen multisensor" is reporting "user" - "Luminance" less than 20
+  #    And the "Kitchen lights" is reporting "user" - "Level" less than 1
+  #    Then the "Kitchen lights" user "Level" should be "30"
 
   Scenario: Remind Kitchen lights to use bi stable switches
     Given the "Kitchen lights" is reporting config "Input 1 switch type" not "Bi-stable"
@@ -29,3 +29,15 @@ Feature: Lighting
   Scenario: Turn the lights off when the alarm is ready
     Given the alarm readiness changes to "ready"
     Then the "Entry lighting" user "Switch-1" should be off
+
+
+  #lounge light switch
+  Scenario: Button 1 is pushed on lounge light switch
+    When the "Lounge light switch" button 1 is pushed
+    Then the "Lounge lights" user "Switch-1" should be off
+    Then the "Lounge lights" user "Switch" should be off
+
+  Scenario: Button 5 is pushed on lounge light switch
+    When the "Lounge light switch" button 5 is pushed
+    Then the "Lounge lights" user "Switch-1" should be on
+    Then the "Lounge lights" user "Switch" should be on
