@@ -233,6 +233,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
 const all_off = () => {
   zwave_helper("zwave_f2e55e6c", { switchAllOff: random_number() })
+  zwave_helper("magichome_600194AA6CAA", { on: false })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
 
@@ -450,7 +451,7 @@ const thing_lookup = {
   "Family bathroom heating": "zwave_f2e55e6c_21",
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
   "Entry lighting": "zwave_f2e55e6c_38",
-  "Loft lighting": "zwave_f2e55e6c_30",
+  "Loft lighting": "zwave_f2e55e6c_33",
   "Noah lighting": "zwave_f2e55e6c_36",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
@@ -465,6 +466,8 @@ const thing_lookup = {
   "Kitchen counter lights": "zwave_f2e55e6c_18",
   "Lounge light switch": "zwave_f2e55e6c_41",
   "Lounge side lights": "zwave_f2e55e6c_42",
+  "Loft bathroom": "zwave_f2e55e6c_44",
+  "Bathroom leds": "magichome_600194AA6CAA",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
