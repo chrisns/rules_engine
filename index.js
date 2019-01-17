@@ -179,6 +179,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: true } })
   if (message === light_messages.kitchen_3_on.toLowerCase())
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.kitchen_4_on.toLowerCase())
+    zwave_helper(thing_lookup["Dining lights"], { user: { Switch: true } })
+  if (message === light_messages.garden_on.toLowerCase())
+    zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": true } })
   if (message === light_messages.garage_1_on.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": true } })
   if (message === light_messages.garage_2_on.toLowerCase())
@@ -202,6 +206,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
   if (message === light_messages.kitchen_3_off.toLowerCase())
     zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.kitchen_4_off.toLowerCase())
+    zwave_helper(thing_lookup["Dining lights"], { user: { Switch: false } })
+  if (message === light_messages.garden_off.toLowerCase())
+    zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": false } })
   if (message === light_messages.garage_1_off.toLowerCase())
     zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": false } })
   if (message === light_messages.garage_2_off.toLowerCase())
@@ -318,24 +326,28 @@ const light_messages = {
   kitchen_1_on_25: "Kitchen 25%",
   kitchen_2_on: "Breakfast Bar On",
   kitchen_3_on: "Sink On",
+  kitchen_4_on: "Dining On",
+  garden_on: "Garden On",
   garage_1_on: "Garage On",
   garage_2_on: "Patio On",
-  entry_light_1_on: "Hallway light on",
-  entry_light_2_on: "Front house light on",
+  entry_light_1_on: "Hallway on",
+  entry_light_2_on: "Front house on",
   fairy_garden_on: "Fairy garden on",
-  noah_light_on: "Noah light on",
+  noah_light_on: "Noah on",
 
   lounge_1_off: "Lounge Off",
   lounge_2_off: "Desk Off",
   kitchen_1_off: "Kitchen Off",
   kitchen_2_off: "Breakfast Bar Off",
   kitchen_3_off: "Sink Off",
+  kitchen_4_off: "Dining Off",
+  garden_off: "Garden off",
   garage_1_off: "Garage Off",
   garage_2_off: "Patio Off",
-  entry_light_1_off: "Hallway light off",
-  entry_light_2_off: "Front house light off",
+  entry_light_1_off: "Hallway off",
+  entry_light_2_off: "Front house off",
   fairy_garden_off: "Fairy garden off",
-  noah_light_off: "Noah light off",
+  noah_light_off: "Noah off",
 
 }
 
@@ -467,6 +479,7 @@ const thing_lookup = {
   "Lounge light switch": "zwave_f2e55e6c_41",
   "Lounge side lights": "zwave_f2e55e6c_42",
   "Loft bathroom": "zwave_f2e55e6c_44",
+  "Dining lights": "zwave_f2e55e6c_45",
   "Bathroom leds": "magichome_600194AA6CAA",
 }
 
