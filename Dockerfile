@@ -17,4 +17,5 @@ COPY --from=build /app /app
 WORKDIR /app
 COPY . .
 ENV NODE_ENV=production
+USER node
 CMD node index.js
