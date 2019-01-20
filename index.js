@@ -37,6 +37,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_47/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -448,6 +449,7 @@ const thing_lookup = {
   "front door lock": "zwave_f2e55e6c_4",
   "Family bathroom heating": "zwave_f2e55e6c_21",
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
+  "Family bathroom lights": "zwave_f2e55e6c_47",
   "Entry lighting": "zwave_f2e55e6c_38",
   "Loft lighting": "zwave_f2e55e6c_33",
   "Noah lighting": "zwave_f2e55e6c_36",
@@ -500,6 +502,16 @@ rulesAdd("the {string} {string} is turned {word}", async (device, field, state, 
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported.user[field] === (state === "on")
 )
+
+rulesAdd("the {string} led strip should be {word}", async (device, action) => {
+  if (action.toLowerCase() === "toggled") {
+    action = await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
+      .then(current_shadow => !JSON.parse(current_shadow.payload).state.reported.on)
+  } else {
+    action = action.toLowerCase() === "on"
+  }
+  return zwave_helper(thing_lookup[device], { "on": action })
+})
 
 rulesAdd("a clock tic", event => event.topic === "clock tic")
 

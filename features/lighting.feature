@@ -41,3 +41,7 @@ Feature: Lighting
     When the "Lounge light switch" button 5 is pushed
     Then the "Lounge lights" user "Switch-1" should be off
     Then the "Lounge lights" user "Switch" should be off
+
+  Scenario: Button is pushed on bathroom light switch once
+    When the "Family bathroom lights" button 26 is pushed
+    Then the "Bathroom leds" led strip should be toggled
