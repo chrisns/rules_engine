@@ -36,6 +36,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_39/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_47/shadow/update/documents",
   "$aws/things/zwave_eb2bd207_2/shadow/update/documents",
@@ -498,6 +499,11 @@ rulesAdd("the {string} is reporting {word} {string} {string}", async (device, ge
   event.message.current.state.reported[genre.toLowerCase()][label].toString() === value.toString()
 )
 
+rulesAdd("the {string} {word} {string} changes", async (device, genre, label, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported[genre.toLowerCase()][label].toString() !== event.message.previous.state.reported[genre.toLowerCase()][label].toString()
+)
+
 rulesAdd("the {string} button {int} is pushed", async (device, buttonid, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported.user["Scene ID"] == buttonid &&
@@ -529,7 +535,15 @@ rulesAdd("a clock tic", event => event.topic === "clock tic")
 
 rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: value } }))
 
-rulesAdd("the {string} {word} {string} should be {word}", (device, genre, setting, on_off) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: on_off === "on" } }))
+rulesAdd("the {string} {word} {string} should be {word}", async (device, genre, setting, action) => {
+  if (action.toLowerCase() === "toggled") {
+    action = await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
+      .then(current_shadow => !JSON.parse(current_shadow.payload).state.reported[genre][setting])
+  } else {
+    action = action.toLowerCase() === "on"
+  }
+  return zwave_helper(thing_lookup[device], { [genre]: { [setting]: action } })
+})
 
 rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&

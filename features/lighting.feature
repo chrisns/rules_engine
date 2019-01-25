@@ -30,6 +30,9 @@ Feature: Lighting
     Given the alarm readiness changes to "ready"
     Then the "Entry lighting" user "Switch-1" should be off
 
+  Scenario: Toggle the dining lights with the spare kitchen light
+    When the "Kitchen lights" user "Sensor" changes
+    Then the "Dining lights" user "Switch" should be toggled
 
   #lounge light switch
   Scenario: Button 1 is pushed on lounge light switch
