@@ -38,6 +38,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_47/shadow/update/documents",
+  "$aws/things/zwave_eb2bd207_2/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -70,10 +71,13 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
   if (message === messages.unlock_door.toLowerCase())
-    iotdata.updateThingShadow({
-      thingName: "zwave_f2e55e6c_4",
-      payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
-    }).promise()
+    zwave_helper("zwave_f2e55e6c_4", { user: { Locked: false } })
+
+  if (message === messages.unlock_garage.toLowerCase())
+    zwave_helper("zwave_eb2bd207_2", { user: { Locked: false } })
+
+  if (message === messages.lock_garage.toLowerCase())
+    zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
 
   if (message === messages.arm_alarm_home.toLowerCase()) {
     reply_with_alarm_status(t[0].toString())
@@ -263,6 +267,8 @@ const reply_with_alarm_status = who => get_alarm_ready_status().then(ready_statu
 const messages = {
   start: "/start",
   unlock_door: "Unlock the door",
+  unlock_garage: "Unlock the garage",
+  lock_garage: "Lock the garage",
   disarm_alarm: "Disarm alarm",
   arm_alarm_home: "Arm alarm home",
   arm_alarm_away: "Arm alarm away",
@@ -469,6 +475,7 @@ const thing_lookup = {
   "Loft bathroom": "zwave_f2e55e6c_44",
   "Dining lights": "zwave_f2e55e6c_45",
   "Bathroom leds": "magichome_600194AA6CAA",
+  "Garage door lock": "zwave_eb2bd207_2",
 }
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
@@ -483,7 +490,12 @@ rulesAdd("the current time is {word} sun{word}", async (ba, sunstate, event) =>
 
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported[genre.toLowerCase()][label] !== value
+  event.message.current.state.reported[genre.toLowerCase()][label].toString() !== value.toString()
+)
+
+rulesAdd("the {string} is reporting {word} {string} {string}", async (device, genre, label, value, event) =>
+  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
+  event.message.current.state.reported[genre.toLowerCase()][label].toString() === value.toString()
 )
 
 rulesAdd("the {string} button {int} is pushed", async (device, buttonid, event) =>

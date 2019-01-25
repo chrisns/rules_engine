@@ -45,3 +45,12 @@ Feature: Lighting
   Scenario: Button is pushed on bathroom light switch once
     When the "Family bathroom lights" button 26 is pushed
     Then the "Bathroom leds" led strip should be toggled
+
+  # Garage lights controlled by lock
+  Scenario: Locking garage turns lights off
+    Given the "Garage door lock" is reporting user "Locked" "true"
+    Then the "Garage lights" user "Switch" should be off
+
+  Scenario: Unlocking garage turns lights on
+    Given the "Garage door lock" is reporting user "Locked" not "true"
+    Then the "Garage lights" user "Switch" should be on
