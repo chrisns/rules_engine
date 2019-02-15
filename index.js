@@ -39,6 +39,7 @@ const awsTopics = [
   "$aws/things/zwave_f2e55e6c_39/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
   "$aws/things/zwave_f2e55e6c_47/shadow/update/documents",
+  "$aws/things/zwave_f2e55e6c_49/shadow/update/documents",
   "$aws/things/zwave_eb2bd207_2/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
@@ -453,13 +454,13 @@ const calculate_time = (number, measure) => {
 const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
 
 const thing_lookup = {
-  "front door lock": "zwave_f2e55e6c_4",
+  "front door lock": "zwave_f2e55e6c_49",
   "Family bathroom heating": "zwave_f2e55e6c_21",
   "Family bathroom flood sensor": "zwave_f2e55e6c_25",
   "Family bathroom lights": "zwave_f2e55e6c_47",
   "Entry lighting": "zwave_f2e55e6c_38",
   "Loft lighting": "zwave_f2e55e6c_33",
-  "Noah lighting": "zwave_f2e55e6c_36",
+  "Noah lighting": "zwave_f2e55e6c_49",
   "Hallway heating": "zwave_f2e55e6c_11",
   "Kitchen heating": "zwave_f2e55e6c_12",
   "Loft en-suite heating": "zwave_f2e55e6c_19",
@@ -579,7 +580,7 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
 rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
 rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
-  thingName: "zwave_f2e55e6c_4",
+  thingName: "zwave_f2e55e6c_49",
   payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
 }).promise())
 
