@@ -3,7 +3,6 @@ Feature: Alarm status changes
   Scenario: Alarm is disarmed
     Given the alarm state changes to "Disarm"
     Then a message reading "Alarm disarmed" is sent to "everyone"
-    And the "Kitchen" speaker says "Alarm is disarmed"
 
   Scenario: Alarm is disarmed take pictures
     Given the alarm state changes to "Disarm"
