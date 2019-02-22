@@ -12,17 +12,18 @@ const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELE
 const { rulesAdd, eventHandler, pickleGherkin } = require("./rules")
 const fs = require("fs")
 const gherkin = fs.readdirSync("features").map(file => fs.readFileSync(`features/${file}`).toString()).join("\n").replace(/Feature:/ig, "#Feature:").substr(1)
+const thing_lookup = require("./things")
 
 const AWSMqtt = require("aws-mqtt-client").default
 
 const awsMqttClient = new AWSMqtt({
   endpointAddress: AWS_IOT_ENDPOINT_HOST,
-  logger: console
+  // logger: console
 })
 
 const iotdata = new AWS.IotData({
   endpoint: AWS_IOT_ENDPOINT_HOST,
-  logger: console
+  // logger: console
 })
 
 const s3 = new AWS.S3({
@@ -72,14 +73,11 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
-  if (message === messages.unlock_door.toLowerCase())
-    zwave_helper("zwave_f2e55e6c_4", { user: { Locked: false } })
+  if (message === messages.unlock_door.toLowerCase()) zwave_helper("zwave_f2e55e6c_4", { user: { Locked: false } })
 
-  if (message === messages.unlock_garage.toLowerCase())
-    zwave_helper("zwave_eb2bd207_2", { user: { Locked: false } })
+  if (message === messages.unlock_garage.toLowerCase()) zwave_helper("zwave_eb2bd207_2", { user: { Locked: false } })
 
-  if (message === messages.lock_garage.toLowerCase())
-    zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
+  if (message === messages.lock_garage.toLowerCase()) zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
 
   if (message === messages.arm_alarm_home.toLowerCase()) {
     reply_with_alarm_status(t[0].toString())
@@ -91,31 +89,24 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     set_alarm_state("arm_away")
   }
 
-  if (message === messages.disarm_alarm.toLowerCase())
-    set_alarm_state("disarm")
+  if (message === messages.disarm_alarm.toLowerCase()) set_alarm_state("disarm")
 
   if (message.startsWith("say")) {
     let split_message = /say\s([\w|,]+)(.*)/gi.exec(message)
     say_helper(split_message[1].toLowerCase(), split_message[2])
   }
 
-  if (message === messages.start.toLowerCase())
-    notify_helper(t[0], `You can do these things`, messages)
+  if (message === messages.start.toLowerCase()) notify_helper(t[0], `You can do these things`, messages)
 
-  if (message === messages.cam_back.toLowerCase())
-    send_camera_to("camera_external_back", t[0])
+  if (message === messages.cam_back.toLowerCase()) send_camera_to("camera_external_back", t[0])
 
-  if (message === messages.cam_front.toLowerCase())
-    send_camera_to("camera_external_front", t[0])
+  if (message === messages.cam_front.toLowerCase()) send_camera_to("camera_external_front", t[0])
 
-  if (message === messages.cam_driveway.toLowerCase())
-    send_camera_to("camera_external_driveway", t[0])
+  if (message === messages.cam_driveway.toLowerCase()) send_camera_to("camera_external_driveway", t[0])
 
-  if (message === messages.cam_garden.toLowerCase())
-    send_camera_to("camera_external_garden", t[0])
+  if (message === messages.cam_garden.toLowerCase()) send_camera_to("camera_external_garden", t[0])
 
-  if (message === messages.cam_porch.toLowerCase())
-    send_camera_to("camera_external_porch", t[0])
+  if (message === messages.cam_porch.toLowerCase()) send_camera_to("camera_external_porch", t[0])
 
   if (message === messages.get_alarm_status.toLowerCase())
     get_alarm_state()
@@ -128,109 +119,58 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     vacuum_helper('stop')
 
   // velux
-  if (message === messages.velux_messages.toLowerCase())
-    notify_helper(t[0], `You can do these velux things`, velux_messages)
-  if (message === velux_messages.velux_blind_100.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
-  if (message === velux_messages.velux_blind_0.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Blind 0', { qos: 0 })
-  if (message === velux_messages.velux_window_25.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Window 25', { qos: 0 })
-  if (message === velux_messages.velux_window_50.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Window 50', { qos: 0 })
-  if (message === velux_messages.velux_window_75.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Window 75', { qos: 0 })
-  if (message === velux_messages.velux_window_100.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Window 100', { qos: 0 })
-  if (message === velux_messages.velux_window_vent.toLowerCase())
-    awsMqttClient.publish('velux', 'Loft Window vent', { qos: 0 })
+  if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
+  if (message === velux_messages.velux_blind_100.toLowerCase()) awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
+  if (message === velux_messages.velux_blind_0.toLowerCase()) awsMqttClient.publish('velux', 'Loft Blind 0', { qos: 0 })
+  if (message === velux_messages.velux_window_25.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 25', { qos: 0 })
+  if (message === velux_messages.velux_window_50.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 50', { qos: 0 })
+  if (message === velux_messages.velux_window_75.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 75', { qos: 0 })
+  if (message === velux_messages.velux_window_100.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 100', { qos: 0 })
+  if (message === velux_messages.velux_window_vent.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window vent', { qos: 0 })
 
   // zwave
-  if (message === messages.zwave.toLowerCase())
-    notify_helper(t[0], `You can do these zwave things`, zwave_messages)
-
-  if (message === zwave_messages.zwave_secureadd.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
-
-  if (message === zwave_messages.zwave_add.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { addNode: random_number() })
-
-  if (message === zwave_messages.zwave_cancel.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { cancelControllerCommand: random_number() })
-
-  if (message === zwave_messages.zwave_remove.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { removeNode: random_number() })
-
-  if (message === zwave_messages.zwave_heal.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { healNetwork: random_number() })
-
-  if (message === zwave_messages.zwave_reset.toLowerCase())
-    zwave_helper("zwave_f2e55e6c", { softReset: random_number() })
+  if (message === messages.zwave.toLowerCase()) notify_helper(t[0], `You can do these zwave things`, zwave_messages)
+  if (message === zwave_messages.zwave_secureadd.toLowerCase()) zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
+  if (message === zwave_messages.zwave_add.toLowerCase()) zwave_helper("zwave_f2e55e6c", { addNode: random_number() })
+  if (message === zwave_messages.zwave_cancel.toLowerCase()) zwave_helper("zwave_f2e55e6c", { cancelControllerCommand: random_number() })
+  if (message === zwave_messages.zwave_remove.toLowerCase()) zwave_helper("zwave_f2e55e6c", { removeNode: random_number() })
+  if (message === zwave_messages.zwave_heal.toLowerCase()) zwave_helper("zwave_f2e55e6c", { healNetwork: random_number() })
+  if (message === zwave_messages.zwave_reset.toLowerCase()) zwave_helper("zwave_f2e55e6c", { softReset: random_number() })
 
   // lights
-  if (message === messages.lights.toLowerCase())
-    notify_helper(t[0], `You can do these light things`, light_messages)
+  if (message === messages.lights.toLowerCase()) notify_helper(t[0], `You can do these light things`, light_messages)
 
-  if (message === light_messages.lounge_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: true } })
-  if (message === light_messages.lounge_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": true } })
-  if (message === light_messages.kitchen_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 99 } })
-  if (message === light_messages.kitchen_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: true } })
-  if (message === light_messages.kitchen_3_on.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": true } })
-  if (message === light_messages.kitchen_4_on.toLowerCase())
-    zwave_helper(thing_lookup["Dining lights"], { user: { Switch: true } })
-  if (message === light_messages.garden_on.toLowerCase())
-    zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": true } })
-  if (message === light_messages.garage_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": true } })
-  if (message === light_messages.garage_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": true } })
-  if (message === light_messages.entry_light_1_on.toLowerCase())
-    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: true } })
-  if (message === light_messages.entry_light_2_on.toLowerCase())
-    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
-  if (message === light_messages.fairy_garden_on.toLowerCase())
-    zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": true } })
-  if (message === light_messages.noah_light_on.toLowerCase())
-    zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": true } })
+  if (message === light_messages.lounge_1_on.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: true } })
+  if (message === light_messages.lounge_2_on.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.kitchen_1_on.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 99 } })
+  if (message === light_messages.kitchen_2_on.toLowerCase()) zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: true } })
+  if (message === light_messages.kitchen_3_on.toLowerCase()) zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.kitchen_4_on.toLowerCase()) zwave_helper(thing_lookup["Dining lights"], { user: { Switch: true } })
+  if (message === light_messages.garden_on.toLowerCase()) zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.garage_1_on.toLowerCase()) zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": true } })
+  if (message === light_messages.garage_2_on.toLowerCase()) zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": true } })
+  if (message === light_messages.entry_light_1_on.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: true } })
+  if (message === light_messages.entry_light_2_on.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
+  if (message === light_messages.fairy_garden_on.toLowerCase()) zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": true } })
+  if (message === light_messages.noah_light_on.toLowerCase()) zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": true } })
 
-  if (message === light_messages.lounge_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
-  if (message === light_messages.lounge_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
-  if (message === light_messages.kitchen_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 0 } })
-  if (message === light_messages.kitchen_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
-  if (message === light_messages.kitchen_3_off.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
-  if (message === light_messages.kitchen_4_off.toLowerCase())
-    zwave_helper(thing_lookup["Dining lights"], { user: { Switch: false } })
-  if (message === light_messages.garden_off.toLowerCase())
-    zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": false } })
-  if (message === light_messages.garage_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": false } })
-  if (message === light_messages.garage_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
-  if (message === light_messages.entry_light_1_off.toLowerCase())
-    zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
-  if (message === light_messages.entry_light_2_off.toLowerCase())
-    zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
-  if (message === light_messages.fairy_garden_off.toLowerCase())
-    zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
-  if (message === light_messages.noah_light_off.toLowerCase())
-    zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": false } })
+  if (message === light_messages.lounge_1_off.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
+  if (message === light_messages.lounge_2_off.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.kitchen_1_off.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 0 } })
+  if (message === light_messages.kitchen_2_off.toLowerCase()) zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
+  if (message === light_messages.kitchen_3_off.toLowerCase()) zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.kitchen_4_off.toLowerCase()) zwave_helper(thing_lookup["Dining lights"], { user: { Switch: false } })
+  if (message === light_messages.garden_off.toLowerCase()) zwave_helper(thing_lookup["Dining lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.garage_1_off.toLowerCase()) zwave_helper(thing_lookup["Garage lights"], { user: { "Switch": false } })
+  if (message === light_messages.garage_2_off.toLowerCase()) zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
+  if (message === light_messages.entry_light_1_off.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
+  if (message === light_messages.entry_light_2_off.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+  if (message === light_messages.fairy_garden_off.toLowerCase()) zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
+  if (message === light_messages.noah_light_off.toLowerCase()) zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": false } })
 
-  if (message === light_messages.kitchen_1_on_25.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
-  if (message === light_messages.kitchen_1_on_50.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })
-  if (message === light_messages.kitchen_1_on_75.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 75 } })
+  if (message === light_messages.kitchen_1_on_25.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
+  if (message === light_messages.kitchen_1_on_50.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })
+  if (message === light_messages.kitchen_1_on_75.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 75 } })
 
   //all off
   if (message === messages.all_off.toLowerCase()) {
@@ -398,7 +338,7 @@ awsMqttClient.on("offline", () => console.log("aws offline"))
 
 rulesAdd("the {string} button is {string}", (thing, action, event) =>
   thing === "doorbell" &&
-  event.topic === "$aws/things/zwave_f2e55e6c_10/shadow/update/documents" &&
+  event.topic === `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents` &&
   event.message.current.state.reported.basic.Basic >= 1 &&
   event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic
 )
@@ -452,33 +392,6 @@ const calculate_time = (number, measure) => {
 }
 
 const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
-
-const thing_lookup = {
-  "front door lock": "zwave_f2e55e6c_49",
-  "Family bathroom heating": "zwave_f2e55e6c_21",
-  "Family bathroom flood sensor": "zwave_f2e55e6c_25",
-  "Family bathroom lights": "zwave_f2e55e6c_47",
-  "Entry lighting": "zwave_f2e55e6c_38",
-  "Loft lighting": "zwave_f2e55e6c_33",
-  "Noah lighting": "zwave_f2e55e6c_49",
-  "Hallway heating": "zwave_f2e55e6c_11",
-  "Kitchen heating": "zwave_f2e55e6c_12",
-  "Loft en-suite heating": "zwave_f2e55e6c_19",
-  "Dining Room heating": "zwave_f2e55e6c_13",
-  "Master bedroom radiator": "zwave_f2e55e6c_14",
-  "Kitchen multisensor": "zwave_f2e55e6c_17",
-  "Kitchen lights": "zwave_f2e55e6c_39",
-  "Lounge lights": "zwave_f2e55e6c_15",
-  "Fairy garden lights": "zwave_f2e55e6c_29",
-  "Garage lights": "zwave_f2e55e6c_37",
-  "Kitchen counter lights": "zwave_f2e55e6c_18",
-  "Lounge light switch": "zwave_f2e55e6c_41",
-  "Lounge side lights": "zwave_f2e55e6c_42",
-  "Loft bathroom": "zwave_f2e55e6c_44",
-  "Dining lights": "zwave_f2e55e6c_45",
-  "Bathroom leds": "magichome_600194AA6CAA",
-  "Garage door lock": "zwave_eb2bd207_2",
-}
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
   await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
@@ -580,7 +493,7 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
 rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
 rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
-  thingName: "zwave_f2e55e6c_49",
+  thingName: thing_lookup["front door lock"],
   payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
 }).promise())
 
