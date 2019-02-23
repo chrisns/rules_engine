@@ -265,7 +265,7 @@ rulesAdd("the alarm state changes to {string}", (state, event) =>
 
 rulesAdd("the alarm is not {string}", async state => await get_alarm_state() !== state)
 
-rulesAdd("the alarm readiness is {string}", async state => await get_alarm_ready_status() !== (state ? "Ready" : "not-ready"))
+rulesAdd("the alarm readiness is {string}", async state => await get_alarm_ready_status() === (state.toLowerCase() === "ready"))
 
 rulesAdd("the alarm is {string}", async state => await get_alarm_state() === state)
 
