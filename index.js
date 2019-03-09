@@ -253,8 +253,8 @@ awsMqttClient.on("offline", () => console.log("aws offline"))
 rulesAdd("the {string} button is {string}", (thing, action, event) =>
   thing === "doorbell" &&
   event.topic === `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents` &&
-  event.message.current.state.reported.basic.Basic >= 1 &&
-  event.message.current.state.reported.basic.Basic !== event.message.previous.state.reported.basic.Basic
+  event.message.current.state.reported.user.Burglar >= 1 &&
+  event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar
 )
 
 rulesAdd("the alarm state changes to {string}", (state, event) =>
