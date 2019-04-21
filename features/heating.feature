@@ -58,8 +58,6 @@ Feature: Heating schedule
   Scenario: Loft en-suite day
     Given a clock tic
     When the time is between "8am" and "1pm"
-    And the alarm is not "Away"
-    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 14°C
 
   Scenario: Loft en-suite bedtime
@@ -72,8 +70,6 @@ Feature: Heating schedule
   Scenario: Loft en-suite after bedtime
     Given a clock tic
     When the time is between "10:30pm" and "11:30pm"
-    And the alarm is not "Away"
-    And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths
