@@ -393,6 +393,12 @@ rulesAdd("a delay of {int} {word}", async (number, measure) =>
 
 rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
+var backoff = {}
+rulesAdd("a {string} backoff of {int} {word}", (backoffname, time, measure) => {
+  if (backoff[backoffname])
+    return false
+  backoff[backoffname] = setTimeout(() => delete backoff[backoffname], calculate_time(time, measure))
+})
 
 rulesAdd("turn everything off", () => all_off())
 
@@ -415,5 +421,6 @@ awsMqttClient.on("message", (topic, message) =>
   eventHandler({ topic: topic, message: message_parser(message) }))
 
 // pickling needs to be done after adding all the rules
+
 console.log(gherkin)
 pickleGherkin(gherkin)
