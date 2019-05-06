@@ -398,6 +398,7 @@ rulesAdd("a {string} backoff of {int} {word}", (backoffname, time, measure) => {
   if (backoff[backoffname])
     return false
   backoff[backoffname] = setTimeout(() => delete backoff[backoffname], calculate_time(time, measure))
+  return true
 })
 
 rulesAdd("turn everything off", () => all_off())
