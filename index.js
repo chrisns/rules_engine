@@ -120,6 +120,9 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.vacuum_stop.toLowerCase())
     vacuum_helper('stop')
 
+  if (message === messages.extractor_fan.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen RM1"], { "sendData": "&\u0000\u0014\u0000\u0018\u0016\u0019-1\u0016\u0018\u0017\u0018-1D\u0019-\u0018\u00170\u0000\r\u0005\u0000\u0000\u0000\u0000" })
+
   // velux
   if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
   if (message === velux_messages.velux_blind_100.toLowerCase()) awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
@@ -173,6 +176,10 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.kitchen_1_on_25.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
   if (message === light_messages.kitchen_1_on_50.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })
   if (message === light_messages.kitchen_1_on_75.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 75 } })
+
+  if (message === light_messages.extractor_fan_light.toLowerCase())
+    zwave_helper(thing_lookup["Kitchen RM1"], { "sendData": "&\u0000\u0014\u0000\u0018\u0017\u0018\u00170-\u0018\u0017\u0018\u00170[\u0019\u0016\u0018\u0017H\u0000\r\u0005\u0000\u0000\u0000\u0000" })
+
 
   //all off
   if (message === messages.all_off.toLowerCase()) {

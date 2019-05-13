@@ -23,5 +23,6 @@
   "Loft bathroom": "zwave_f2e55e6c_44",
   "Dining lights": "zwave_f2e55e6c_45",
   "Bathroom leds": "magichome_600194AA6CAA",
-  "Garage door lock": "zwave_eb2bd207_2"
+  "Garage door lock": "zwave_eb2bd207_2",
+  "Kitchen RM1": "broadlink_37279800a8c0"
 }

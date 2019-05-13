@@ -10,6 +10,7 @@ module.exports.light_messages = {
   start: "/start",
   lounge_1_on: "Lounge On",
   lounge_2_on: "Desk On",
+  extractor_fan_light: "Extractor fan light",
   kitchen_1_on: "Kitchen 100%",
   kitchen_1_on_75: "Kitchen 75%",
   kitchen_1_on_50: "Kitchen 50%",
@@ -81,5 +82,6 @@ module.exports.messages = {
   velux_messages: "Velux",
   zwave: "Z-wave management",
   vacuum_start: "Vacuum Start",
-  vacuum_stop: "Vacuum Stop"
+  vacuum_stop: "Vacuum Stop",
+  extractor_fan: "Extractor fan"
 }
