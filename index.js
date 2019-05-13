@@ -189,6 +189,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
+    zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
   }
 })
 
