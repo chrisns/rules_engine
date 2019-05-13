@@ -158,6 +158,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.entry_light_2_on.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": true } })
   if (message === light_messages.fairy_garden_on.toLowerCase()) zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": true } })
   if (message === light_messages.noah_light_on.toLowerCase()) zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": true } })
+  if (message === light_messages.loo_on.toLowerCase()) zwave_helper(thing_lookup["Loft bathroom"], { user: { Level: 20 } })
 
   if (message === light_messages.lounge_1_off.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
   if (message === light_messages.lounge_2_off.toLowerCase()) zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
@@ -172,6 +173,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === light_messages.entry_light_2_off.toLowerCase()) zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
   if (message === light_messages.fairy_garden_off.toLowerCase()) zwave_helper(thing_lookup["Fairy garden lights"], { user: { "Switch": false } })
   if (message === light_messages.noah_light_off.toLowerCase()) zwave_helper(thing_lookup["Noah lighting"], { user: { "Switch": false } })
+  if (message === light_messages.loo_off.toLowerCase()) zwave_helper(thing_lookup["Loft bathroom"], { user: { Level: 0 } })
 
   if (message === light_messages.kitchen_1_on_25.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 25 } })
   if (message === light_messages.kitchen_1_on_50.toLowerCase()) zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 50 } })

@@ -25,6 +25,7 @@ module.exports.light_messages = {
   entry_light_2_on: "Front house on",
   fairy_garden_on: "Fairy garden on",
   noah_light_on: "Noah on",
+  loo_on: "Loo on",
 
   lounge_1_off: "Lounge Off",
   lounge_2_off: "Desk Off",
@@ -39,6 +40,7 @@ module.exports.light_messages = {
   entry_light_2_off: "Front house off",
   fairy_garden_off: "Fairy garden off",
   noah_light_off: "Noah off",
+  loo_on: "Loo off",
 }
 
 module.exports.velux_messages = {
