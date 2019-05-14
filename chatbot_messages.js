@@ -40,7 +40,7 @@ module.exports.light_messages = {
   entry_light_2_off: "Front house off",
   fairy_garden_off: "Fairy garden off",
   noah_light_off: "Noah off",
-  loo_on: "Loo off",
+  loo_off: "Loo off",
 }
 
 module.exports.velux_messages = {
