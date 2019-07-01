@@ -124,14 +124,16 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen RM1"], { "sendData": "&\u0000\u0014\u0000\u0018\u0016\u0019-1\u0016\u0018\u0017\u0018-1D\u0019-\u0018\u00170\u0000\r\u0005\u0000\u0000\u0000\u0000" })
 
   // velux
+
+
   if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
-  if (message === velux_messages.velux_blind_100.toLowerCase()) awsMqttClient.publish('velux', 'Loft Blind 100', { qos: 0 })
-  if (message === velux_messages.velux_blind_0.toLowerCase()) awsMqttClient.publish('velux', 'Loft Blind 0', { qos: 0 })
-  if (message === velux_messages.velux_window_25.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 25', { qos: 0 })
-  if (message === velux_messages.velux_window_50.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 50', { qos: 0 })
-  if (message === velux_messages.velux_window_75.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 75', { qos: 0 })
-  if (message === velux_messages.velux_window_100.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window 100', { qos: 0 })
-  if (message === velux_messages.velux_window_vent.toLowerCase()) awsMqttClient.publish('velux', 'Loft Window vent', { qos: 0 })
+  if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 100 })
+  if (message === velux_messages.velux_blind_0.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 0 })
+  if (message === velux_messages.velux_window_25.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 25 })
+  if (message === velux_messages.velux_window_50.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 50 })
+  if (message === velux_messages.velux_window_75.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 75 })
+  if (message === velux_messages.velux_window_100.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 100 })
+  if (message === velux_messages.velux_window_vent.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 7 })
 
   // zwave
   if (message === messages.zwave.toLowerCase()) notify_helper(t[0], `You can do these zwave things`, zwave_messages)
