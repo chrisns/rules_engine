@@ -35,18 +35,19 @@ const s3 = new AWS.S3({
 const awsTopics = [
   "owntracks/+/+/event",
   "$aws/things/alarm_status/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_10/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_17/shadow/update/documents",
+  `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Kitchen multisensor"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Family bathroom flood sensor"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Kitchen lights"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Lounge light switch"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Family bathroom lights"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Garage door lock"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Noah lighting"]}/shadow/update/documents`,
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_25/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_39/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_41/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_47/shadow/update/documents",
-  "$aws/things/zwave_f2e55e6c_49/shadow/update/documents",
-  "$aws/things/zwave_eb2bd207_2/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
+
 
 awsMqttClient.on("connect", () => {
   for (i = 0; i < awsTopics.length; i += 8) {
@@ -75,11 +76,11 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   console.log(`Telegram user ${t[0]} just sent:"${message}"`)
 
-  if (message === messages.unlock_door.toLowerCase()) zwave_helper("zwave_f2e55e6c_4", { user: { Locked: false } })
+  if (message === messages.unlock_door.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { user: { Locked: false } })
 
-  if (message === messages.unlock_garage.toLowerCase()) zwave_helper("zwave_eb2bd207_2", { user: { Locked: false } })
+  if (message === messages.unlock_garage.toLowerCase()) zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: false } })
 
-  if (message === messages.lock_garage.toLowerCase()) zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
+  if (message === messages.lock_garage.toLowerCase()) zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: true } })
 
   if (message === messages.arm_alarm_home.toLowerCase()) {
     reply_with_alarm_status(t[0].toString())
@@ -191,7 +192,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     reply_with_alarm_status(t[0])
     set_alarm_state("arm_home")
     notify_helper(t[0], "night night")
-    zwave_helper("zwave_eb2bd207_2", { user: { Locked: true } })
+    zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: true } })
   }
 })
 
