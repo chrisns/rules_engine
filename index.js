@@ -204,6 +204,19 @@ const all_off = () => {
 
 const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
+const song_play_helper = (song_uri, room, volume = 10) =>
+  awsMqttClient.publish("sonos/preset/", JSON.stringify([encodeURI(JSON.stringify({
+    "players": [
+      {
+        "roomName": room,
+        "volume": volume
+      }
+    ],
+    "uri": song_uri,
+    "pauseOthers": false
+  }))]))
+
+
 const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
   iotdata.getThingShadow({ thingName: camera }).promise()
     .then(thing => JSON.parse(thing.payload).state.reported.jpg)
@@ -391,6 +404,9 @@ rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.message.current.state.reported.user.Burglar === 8 &&
   event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
 
+rulesAdd("the {string} speaker should {word}", (room, action) => awsMqttClient.publish(`sonos/${action.toLowerCase()}/${room}`, JSON.stringify({}), { qos: 0 }))
+
+rulesAdd("the {string} speaker should play {string} at {int}%", (room, song_uri, volume) => song_play_helper(song_uri, room, volume))
 rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
 
 rulesAdd("the vacuum should {word}", vacuum_helper)
@@ -426,7 +442,7 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
 
 rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
-rulesAdd("the front door is unlocked", event => iotdata.updateThingShadow({
+rulesAdd("the {word} door is unlocked", (event, door) => iotdata.updateThingShadow({
   thingName: thing_lookup["front door lock"],
   payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
 }).promise())
