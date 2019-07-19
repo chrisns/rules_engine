@@ -37,8 +37,13 @@ Feature: Alarm status changes
     Given the alarm state changes to "Away"
     Then turn everything off
 
-  # Scenario: Alarm is armed away lock the garage door
-  # Given the alarm state changes to "Away"
+  Scenario: Alarm is armed away lock the garage door
+    Given the alarm state changes to "Away"
+    Then the "Garage door lock" user "Locked" should be on
+
+  Scenario: Alarm is armed home lock the garage door
+    Given the alarm state changes to "Home"
+    Then the "Garage door lock" user "Locked" should be on
 
   Scenario: Alarm is armed away close the velux window
     Given the alarm state changes to "Away"
