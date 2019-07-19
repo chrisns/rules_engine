@@ -411,8 +411,6 @@ rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) 
 
 rulesAdd("the vacuum should {word}", vacuum_helper)
 
-rulesAdd("the velux scene {string} is activated", (scene) => awsMqttClient.publish('velux', scene, { qos: 0 }))
-
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
 rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { Heating: temp } }))
@@ -439,6 +437,8 @@ rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
+
+rulesAdd("the velux {string} is set to {int}%", (device, val) => zwave_helper(thing_lookup[device], { set_to: val }))
 
 rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
