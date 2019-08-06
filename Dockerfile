@@ -12,6 +12,7 @@ RUN npm prune --production
 RUN rm -r test package-lock.json .eslintrc.js
 
 FROM node:alpine
+RUN apk --no-cache add openssl wget
 
 COPY --from=build /app /app
 WORKDIR /app
