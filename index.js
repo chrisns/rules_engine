@@ -440,7 +440,7 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
 
 rulesAdd("the velux {string} is set to {int}%", (device, val) => zwave_helper(thing_lookup[device], { set_to: val }))
 
-rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_MPT2taEp8tFu5JgGyioUj34RpkkCHQzJ/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
+rulesAdd("the nest thermostat mode is set to {word}", mode => awsMqttClient.publish(`$aws/things/nest_09AA01AC28170R93/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
 rulesAdd("the {word} door is unlocked", (event, door) => iotdata.updateThingShadow({
   thingName: thing_lookup["front door lock"],

@@ -47,7 +47,7 @@ Feature: Heating schedule
     Given a clock tic
     And the alarm is not "Away"
     And the alarm readiness is "ready"
-    Then the nest thermostat mode is set to heat
+    Then the nest thermostat mode is set to eco-off
 
   Scenario: Loft en-suite morning
     Given a clock tic
