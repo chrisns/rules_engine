@@ -128,8 +128,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
 
   if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
-  if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 100 })
-  if (message === velux_messages.velux_blind_0.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 1 })
+  if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 1 })
+  if (message === velux_messages.velux_blind_0.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 100 })
   if (message === velux_messages.velux_window_25.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 75 })
   if (message === velux_messages.velux_window_50.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 50 })
   if (message === velux_messages.velux_window_75.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 25 })
