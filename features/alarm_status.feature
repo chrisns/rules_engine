@@ -59,3 +59,11 @@ Feature: Alarm status changes
   Scenario: Alarm is armed away turn everything off
     Given the alarm state changes to "Away"
     Then turn everything off
+
+  Scenario: Mute the doorlock on disarm
+    Given the alarm state changes to "Disarm"
+    Then the "front door lock" config "Audio Mode" should be "Silent"
+
+  Scenario: Volume on the doorlock on away
+    Given the alarm state changes to "Away"
+    Then the "front door lock" config "Audio Mode" should be "High"
