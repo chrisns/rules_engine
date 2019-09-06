@@ -47,14 +47,14 @@ Feature: Alarm status changes
 
   Scenario: Alarm is armed away close the velux window
     Given the alarm state changes to "Away"
-    Then the velux "Loft Blind" is set to 1%
-    Then the velux "Loft Window" is set to 93%
+    Then the velux "Loft Blind" is set to 100%
+    Then the velux "Loft Window" is set to 3%
 
   Scenario: Alarm is disarmed open the loft blind
     Given the alarm state changes to "Disarm"
     And the current time is after sunrise
     And the current time is before sunset
-    Then the velux "Loft Blind" is set to 100%
+    Then the velux "Loft Blind" is set to 1%
 
   Scenario: Alarm is armed away turn everything off
     Given the alarm state changes to "Away"
