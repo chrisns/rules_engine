@@ -7,6 +7,8 @@ const request = require("request-promise-native")
 const uuid = require("uuid/v4")
 const Date = require("sugar-date").Date
 const memoize = require("memoizee")
+const CronJob = require('cron').CronJob;
+
 
 const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID } = process.env
 const { camera_map, light_messages, velux_messages, zwave_messages, messages } = require("./chatbot_messages")
@@ -333,6 +335,14 @@ const calculate_time = (number, measure) => {
 }
 
 const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
+
+var cron_schedules = []
+
+rulesAdd("cron {string}", (cron_schedule, event) => {
+  if (!cron_schedules[cron_schedule])
+    cron_schedules[cron_schedule] = new CronJob(cron_schedule, () => eventHandler({ topic: "cron", message: cron_schedule }))
+  return event.topic === "cron" && event.message === cron_schedule
+})
 
 rulesAdd("the {string} z-wave network is ready", async (device) =>
   await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
