@@ -42,6 +42,7 @@ const awsTopics = [
   `$aws/things/${thing_lookup["Lounge light switch"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Family bathroom lights"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Garage door lock"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Garage lights"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Noah lighting"]}/shadow/update/documents`,
   "$aws/things/zwave_f2e55e6c_23/shadow/update/documents",
   `notify/out/${CHRIS_TELEGRAM_ID}`,
