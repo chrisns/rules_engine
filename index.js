@@ -334,6 +334,11 @@ const calculate_time = (number, measure) => {
 
 const clock_tic = setInterval(() => eventHandler({ topic: "clock tic" }), calculate_time(5, process.env.NODE_ENV === "production" ? "minutes" : "seconds"))
 
+rulesAdd("the {string} z-wave network is ready", async (device) =>
+  await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
+    .then(thing => JSON.parse(thing.payload).state.reported.ready) === true
+)
+
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
   await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
     .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
