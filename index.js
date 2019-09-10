@@ -197,7 +197,8 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 })
 
 const all_off = () => {
-  zwave_helper("zwave_f2e55e6c", { switchAllOff: random_number() })
+  zwave_helper(thing_lookup["Zwave eu controller"], { switchAllOff: random_number() })
+  zwave_helper(thing_lookup["Zwave usa controller"], { switchAllOff: random_number() })
   zwave_helper("magichome_600194AA6CAA", { on: false })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
