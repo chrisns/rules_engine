@@ -13,13 +13,12 @@ Feature: Location based events
   Scenario: Announce Chris arrives
     Given cnsiphone arrives home
     When the alarm is not "Away"
-    Then the "Desk" speaker says "Daddy's home"
     And the "Kitchen" speaker says "Daddy's home"
 
   Scenario: Announce Hannah arrives
     Given hnsiphone arrives home
     When the alarm is not "Away"
-    Then the "Kitchen" speaker says "Mummy's home"
+    And the "Kitchen" speaker says "Mummy's home"
 
   Scenario: Chris arrives disarm alarm
     Given cnsiphone arrives home
@@ -42,11 +41,11 @@ Feature: Location based events
   Scenario: Chris arrives home after dark
     Given cnsiphone arrives home
     And the current time is after sunset
-    Then the "Entry lighting" user "Switch" should be on
+    Then the "Small hallway lights" user "Level" should be 100
     Then the "Entry lighting" user "Switch-1" should be on
 
   Scenario: Hannah arrives home after dark
     Given hnsiphone arrives home
     And the current time is after sunset
-    Then the "Entry lighting" user "Switch" should be on
+    Then the "Small hallway lights" user "Level" should be 100
     Then the "Entry lighting" user "Switch-1" should be on
