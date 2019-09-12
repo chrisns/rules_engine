@@ -37,6 +37,8 @@ const s3 = new AWS.S3({
 const awsTopics = [
   "owntracks/+/+/event",
   "$aws/things/alarm_status/shadow/update/documents",
+  `$aws/things/${thing_lookup["Zwave eu controller"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Zwave usa controller"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Kitchen multisensor"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Family bathroom flood sensor"]}/shadow/update/documents`,
@@ -284,6 +286,12 @@ rulesAdd("the {string} button is {string}", (thing, action, event) =>
   event.topic === `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents` &&
   event.message.current.state.reported.user.Burglar >= 1 &&
   event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar
+)
+
+rulesAdd("the zwave controller {string} changes to {word}", (controller, readiness, event) =>
+  event.topic === `$aws/things/${thing_lookup[controller]}/shadow/update/documents` &&
+  event.message.current.state.reported.ready === (readiness === "ready") &&
+  event.message.current.state.reported.ready !== event.message.previous.state.reported.ready
 )
 
 rulesAdd("the alarm state changes to {string}", (state, event) =>
