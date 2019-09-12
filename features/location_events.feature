@@ -42,11 +42,11 @@ Feature: Location based events
   Scenario: Chris arrives home after dark
     Given cnsiphone arrives home
     And the current time is after sunset
-    Then the "Entry lighting" user "Instance 1: Switch" should be on
-    Then the "Entry lighting" user "Instance 2: Switch" should be on
+    Then the "Entry lighting" user "Switch" should be on
+    Then the "Entry lighting" user "Switch-1" should be on
 
   Scenario: Hannah arrives home after dark
     Given hnsiphone arrives home
     And the current time is after sunset
-    Then the "Entry lighting" user "Instance 1: Switch" should be on
-    Then the "Entry lighting" user "Instance 2: Switch" should be on
+    Then the "Entry lighting" user "Switch" should be on
+    Then the "Entry lighting" user "Switch-1" should be on
