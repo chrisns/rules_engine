@@ -396,7 +396,8 @@ rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
 
 rulesAdd("the {string} {string} is turned {word}", async (device, field, state, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user[field] === (state === "on")
+  event.message.current.state.reported.user[field] === (state === "on") &&
+  event.message.current.state.reported.user[field] !== event.message.previous.state.reported.user[field]
 )
 
 rulesAdd("the {string} led strip should be {word}", async (device, action) => {
