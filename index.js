@@ -426,8 +426,8 @@ rulesAdd("the {string} {word} {string} should be {word}", async (device, genre, 
 
 rulesAdd("there is movement is detected on the {string}", (device, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user.Burglar === 8 &&
-  event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar)
+  event.message.current.state.reported.user.Sensor === true &&
+  event.message.current.state.reported.user.Sensor !== event.message.previous.state.reported.user.Sensor)
 
 rulesAdd("the {string} speaker should {word}", (room, action) => awsMqttClient.publish(`sonos/${action.toLowerCase()}/${room}`, JSON.stringify({}), { qos: 0 }))
 

@@ -1,10 +1,10 @@
 Feature: Lighting
 
-  #  Scenario: Someone walks in to the kitchen and its dark
-  #    Given there is movement is detected on the "Kitchen multisensor"
-  #    And the "Kitchen multisensor" is reporting "user" - "Luminance" less than 20
-  #    And the "Kitchen lights" is reporting "user" - "Level" less than 1
-  #    Then the "Kitchen lights" user "Level" should be "30"
+  Scenario: Someone walks in to the kitchen and its dark
+    Given there is movement is detected on the "Kitchen multisensor"
+    And the "Kitchen multisensor" is reporting "user" - "Luminance" less than 20
+    And the "Kitchen lights" is reporting "user" - "Level" less than 20
+    Then the "Kitchen lights" user "Level" should be "20"
 
   Scenario: Remind Lounge lights to use bi stable switches
     Given the "Lounge lights" is reporting config "Inputs Button/Switch configuration" not "Bi-stable input (switch)"
