@@ -347,7 +347,7 @@ var cron_schedules = []
 
 rulesAdd("cron {string}", (cron_schedule, event) => {
   if (!cron_schedules[cron_schedule])
-    cron_schedules[cron_schedule] = new CronJob(cron_schedule, () => eventHandler({ topic: "cron", message: cron_schedule }))
+    cron_schedules[cron_schedule] = new CronJob(cron_schedule, () => eventHandler({ topic: "cron", message: cron_schedule }), null, true)
   return event.topic === "cron" && event.message === cron_schedule
 })
 
