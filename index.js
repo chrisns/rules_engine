@@ -281,11 +281,10 @@ awsMqttClient.on("error", (error) => console.error("aws", error))
 awsMqttClient.on("close", () => console.error("aws connection close"))
 awsMqttClient.on("offline", () => console.log("aws offline"))
 
-rulesAdd("the {string} button is {string}", (thing, action, event) =>
-  thing === "doorbell" &&
+rulesAdd("the doorbell is pressed", (event) =>
   event.topic === `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents` &&
-  event.message.current.state.reported.user.Burglar >= 1 &&
-  event.message.current.state.reported.user.Burglar !== event.message.previous.state.reported.user.Burglar
+  event.message.current.state.reported.user["Home Security"] === "Tampering -  Cover Removed" &&
+  event.message.previous.state.reported.user["Home Security"] === "Clear"
 )
 
 rulesAdd("the zwave controller {string} changes to {word}", (controller, readiness, event) =>
