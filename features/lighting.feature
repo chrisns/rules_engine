@@ -2,7 +2,7 @@ Feature: Lighting
 
   Scenario: Someone walks in to the kitchen and its dark
     Given there is movement is detected on the "Kitchen multisensor"
-    And the "Kitchen multisensor" is reporting "user" - "Luminance" less than 20
+    And the "Kitchen multisensor" is reporting "user" - "Illuminance" less than 20
     And the "Kitchen lights" is reporting "user" - "Level" less than 20
     Then the "Kitchen lights" user "Level" should be "20"
 
@@ -17,21 +17,6 @@ Feature: Lighting
   Scenario: Turn the lights off when the alarm is ready
     Given the alarm readiness changes to "ready"
     Then the "Entry lighting" user "Switch-1" should be off
-
-  Scenario: Toggle the dining lights with the spare kitchen light
-    When the "Kitchen lights" user "Sensor" changes
-    Then the "Dining lights" user "Switch" should be toggled
-
-  #lounge light switch
-  Scenario: Button 1 is pushed on lounge light switch
-    When the "Lounge light switch" button 1 is pushed
-    Then the "Lounge lights" user "Switch-1" should be on
-    Then the "Lounge lights" user "Switch" should be on
-
-  Scenario: Button 5 is pushed on lounge light switch
-    When the "Lounge light switch" button 5 is pushed
-    Then the "Lounge lights" user "Switch-1" should be off
-    Then the "Lounge lights" user "Switch" should be off
 
   Scenario: Button is pushed on bathroom light switch once
     When the "Family bathroom lights" button 26 is pushed
