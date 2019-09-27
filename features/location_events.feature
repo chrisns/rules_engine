@@ -38,14 +38,20 @@ Feature: Location based events
     Given hnsiphone arrives home
     Then the front door is unlocked
 
+  Scenario: Chris arrives home
+    Given cnsiphone arrives home
+    Then the "Entry lighting" user "Switch-1" should be on
+
+  Scenario: Hannah arrives home
+    Given hnsiphone arrives home
+    Then the "Entry lighting" user "Switch-1" should be on
+
   Scenario: Chris arrives home after dark
     Given cnsiphone arrives home
     And the current time is after sunset
-    Then the "Small hallway lights" user "Level" should be 100
-    Then the "Entry lighting" user "Switch-1" should be on
+    Then the "Small hallway lights" user "Level" should be 99
 
   Scenario: Hannah arrives home after dark
     Given hnsiphone arrives home
     And the current time is after sunset
-    Then the "Small hallway lights" user "Level" should be 100
-    Then the "Entry lighting" user "Switch-1" should be on
+    Then the "Small hallway lights" user "Level" should be 99
