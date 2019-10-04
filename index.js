@@ -383,8 +383,9 @@ rulesAdd("the {string} {word} {string} changes", async (device, genre, label, ev
 
 rulesAdd("the {string} button {int} is pushed", async (device, buttonid, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user["Scene ID"] == buttonid &&
-  event.message.current.metadata.reported.user["Scene ID"].timestamp !== event.message.previous.metadata.reported.user["Scene ID"].timestamp
+  event.message.current.state.reported.user["Scene"] == buttonid &&
+  event.message.previous.state.reported.user["Scene"] === 0 &&
+  event.message.current.metadata.reported.user["Scene"].timestamp !== event.message.previous.metadata.reported.user["Scene"].timestamp
 )
 
 rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
