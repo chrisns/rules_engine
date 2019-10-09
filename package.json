@@ -22,7 +22,7 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "sugar-date": "^2.0.6",
-    "uuid": "^3.1.0"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
