@@ -201,9 +201,33 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 })
 
 const all_off = () => {
-  zwave_helper(thing_lookup["Zwave eu controller"], { switchAllOff: random_number() })
-  zwave_helper(thing_lookup["Zwave usa controller"], { switchAllOff: random_number() })
-  zwave_helper("magichome_600194AA6CAA", { on: false })
+  zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Family bathroom lights"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Loft lighting"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Downstairs toilet lighting"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Noah lighting"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Fairy garden lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
+  zwave_helper(thing_lookup["Freya room lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Small hallway lights"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Utility room lights"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Lounge side lights"], { user: { Level: 0 } })
+  zwave_helper(thing_lookup["Loft bathroom"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Studio"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Loft landing"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Dining lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Landing lights"], { user: { Switch: false } })
+  zwave_helper(thing_lookup["Bathroom leds"], { "on": false })
+
+  // zwave_helper(thing_lookup["Zwave eu controller"], { switchAllOff: random_number() })
+  // zwave_helper(thing_lookup["Zwave usa controller"], { switchAllOff: random_number() })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
 
@@ -358,7 +382,7 @@ rulesAdd("the {string} z-wave network is ready", async (device) =>
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
   await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
-    .then(thing => JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label]) < value
+    .then(thing => parseFloat(JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label])) < value
 )
 
 rulesAdd("the current time is {word} sun{word}", async (ba, sunstate, event) =>
