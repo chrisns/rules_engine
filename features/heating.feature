@@ -2,25 +2,25 @@ Feature: Heating schedule
 
   Scenario: Daytime setpoint
     Given a clock tic
-    When the time is between "6am" and "3:59pm"
+    When the time is between "6am" and "4pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
-    Then the underfloor "Hallway heating" should be 24°C
-    And the underfloor "Kitchen heating" should be 25°C
-    And the underfloor "Dining Room heating" should be 25°C
+    Then the underfloor "Hallway heating" should be 20°C
+    And the underfloor "Kitchen heating" should be 22°C
+    And the underfloor "Dining Room heating" should be 22°C
 
   Scenario: Evening setpoint
     Given a clock tic
-    When the time is between "4pm" and "9pm"
+    When the time is between "4pm" and "8pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 26°C
-    And the underfloor "Kitchen heating" should be 27°C
-    And the underfloor "Dining Room heating" should be 29°C
+    And the underfloor "Kitchen heating" should be 26°C
+    And the underfloor "Dining Room heating" should be 26°C
 
   Scenario: Nighttime setpoint
     Given a clock tic
-    When the time is between "9pm" and "11:59pm"
+    When the time is between "8pm" and "11:59pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 15°C
@@ -62,14 +62,14 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite bedtime
     Given a clock tic
-    When the time is between "9pm" and "10pm"
+    When the time is between "8:15pm" and "9pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Loft en-suite heating" should be 28°C
 
   Scenario: Loft en-suite after bedtime
     Given a clock tic
-    When the time is between "10:30pm" and "11:30pm"
+    When the time is between "9pm" and "11:30pm"
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths
@@ -80,7 +80,7 @@ Feature: Heating schedule
 
   Scenario: Family bathroom nighttime
     Given a clock tic
-    When the time is between "6pm" and "11pm"
+    When the time is between "5:30pm" and "11pm"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 10°C
 
