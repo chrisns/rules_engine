@@ -462,7 +462,7 @@ rulesAdd("the vacuum should {word}", vacuum_helper)
 
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
-rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { Heating: temp } }))
+rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { "Heating 1": temp } }))
 
 rulesAdd("a delay of {int} {word}", async (number, measure) =>
   new Promise(resolve => setTimeout(resolve, calculate_time(number, measure.toLowerCase()))))
