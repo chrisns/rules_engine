@@ -2,19 +2,19 @@ Feature: Heating schedule
 
   Scenario: Daytime setpoint
     Given a clock tic
-    When the time is between "6am" and "4pm"
+    When the time is between "5am" and "4pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 20°C
-    And the underfloor "Kitchen heating" should be 22°C
-    And the underfloor "Dining Room heating" should be 22°C
+    And the underfloor "Kitchen heating" should be 24°C
+    And the underfloor "Dining Room heating" should be 24°C
 
   Scenario: Evening setpoint
     Given a clock tic
     When the time is between "4pm" and "8pm"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
-    Then the underfloor "Hallway heating" should be 26°C
+    Then the underfloor "Hallway heating" should be 23°C
     And the underfloor "Kitchen heating" should be 26°C
     And the underfloor "Dining Room heating" should be 26°C
 
@@ -62,14 +62,13 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite bedtime
     Given a clock tic
-    When the time is between "8:15pm" and "9pm"
+    When the time is between "7:45pm" and "9:30pm"
     And the alarm is not "Away"
-    And the alarm readiness is "ready"
-    Then the underfloor "Loft en-suite heating" should be 28°C
+    Then the underfloor "Loft en-suite heating" should be 30°C
 
   Scenario: Loft en-suite after bedtime
     Given a clock tic
-    When the time is between "9pm" and "11:30pm"
+    When the time is between "9:30pm" and "11:30pm"
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths
