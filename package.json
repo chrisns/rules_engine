@@ -20,7 +20,7 @@
     "memoizee": "^0.4.14",
     "mqtt-wildcard": "^3.0.9",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.7",
+    "request-promise-native": "^1.0.8",
     "sugar-date": "^2.0.6",
     "uuid": "^3.3.3"
   },
