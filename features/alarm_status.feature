@@ -61,3 +61,10 @@ Feature: Alarm status changes
   Scenario: Volume on the doorlock on away
     Given the alarm state changes to "Away"
     Then the "front door lock" config "Audio Mode" should be "High"
+
+  Scenario: Forgot to arm home
+    Given cron "0 0 0 * * *"
+    And the alarm is "Disarm"
+    Then a message reading "I armed the alarm home because it looks like you forgot to" is sent to "everyone"
+    And the alarm state should be "Home"
+
