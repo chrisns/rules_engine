@@ -6,7 +6,7 @@ Feature: Heating schedule
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 20°C
-    And the underfloor "Kitchen heating" should be 24°C
+    And the underfloor "Kitchen heating" should be 26°C
     And the underfloor "Dining Room heating" should be 24°C
 
   Scenario: Evening setpoint
@@ -51,7 +51,7 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite morning
     Given a clock tic
-    When the time is between "5am" and "7am"
+    When the time is between "04:30am" and "7am"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 35°C
 
