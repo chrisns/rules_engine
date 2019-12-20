@@ -17,10 +17,6 @@ Feature: Doorbell
     Given the doorbell is pressed
     And a "doorbell" backoff of 5 seconds
     Then the "Utility room" speaker says "someone at the door"
-
-  Scenario: Someone rings the doorbell
-    Given the doorbell is pressed
-    And a "doorbell" backoff of 5 seconds
     Then the "Desk" speaker says "someone at the door"
 
   Scenario: Refresh the door look time
