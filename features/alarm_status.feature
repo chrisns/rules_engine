@@ -66,5 +66,5 @@ Feature: Alarm status changes
     Given cron "0 0 0 * * *"
     And the alarm is "Disarm"
     Then a message reading "I armed the alarm home because it looks like you forgot to" is sent to "everyone"
-    And the alarm state should be "Home"
+    And the alarm state should be "Arm_Home"
 
