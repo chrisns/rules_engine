@@ -13,7 +13,7 @@
   "dependencies": {
     "aws": "0.0.3-2",
     "aws-mqtt-client": "0.0.5",
-    "aws-sdk": "^2.639.0",
+    "aws-sdk": "^2.640.0",
     "cron": "^1.8.2",
     "cucumber": "^4.1.0",
     "lodash": "^4.17.15",
