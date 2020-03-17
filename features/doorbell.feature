@@ -16,8 +16,8 @@ Feature: Doorbell
   Scenario: Someone rings the doorbell
     Given the doorbell is pressed
     And a "doorbell" backoff of 5 seconds
-    Then the "Utility room" speaker says "someone at the door"
-    Then the "Desk" speaker says "someone at the door"
+    Then the "Loft" speaker says "someone at the door"
+    Then the "Kitchen" speaker says "someone at the door"
 
   Scenario: Refresh the door look time
     Given cron "30 07 * * * *"
