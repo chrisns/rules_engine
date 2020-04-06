@@ -87,6 +87,9 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   if (message === messages.lock_garage.toLowerCase()) zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: true } })
 
+  if (message === messages.lock_quiet.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { config: { "Audio Mode": "Silent" } })
+  if (message === messages.lock_noisy.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { config: { "Audio Mode": "High" } })
+
   if (message === messages.arm_alarm_home.toLowerCase()) {
     reply_with_alarm_status(t[0].toString())
     set_alarm_state("arm_home")
