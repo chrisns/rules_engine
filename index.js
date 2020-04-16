@@ -11,7 +11,7 @@ const CronJob = require('cron').CronJob;
 
 
 const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID } = process.env
-const { camera_map, light_messages, velux_messages, zwave_messages, messages } = require("./chatbot_messages")
+const { camera_map, velux_messages, messages } = require("./chatbot_messages")
 
 const { rulesAdd, eventHandler, pickleGherkin } = require("./rules")
 const fs = require("fs")
@@ -133,8 +133,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
     zwave_helper(thing_lookup["Kitchen RM"], { "sendData": "&\u0000\u0014\u0000\u0018\u0016\u0019-1\u0016\u0018\u0017\u0018-1D\u0019-\u0018\u00170\u0000\r\u0005\u0000\u0000\u0000\u0000" })
 
   // velux
-
-
   if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
   if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 1 })
   if (message === velux_messages.velux_blind_0.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 100 })
@@ -143,22 +141,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === velux_messages.velux_window_75.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 25 })
   if (message === velux_messages.velux_window_100.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 1 })
   if (message === velux_messages.velux_window_vent.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 93 })
-
-  // zwave
-  if (message === messages.zwave.toLowerCase()) notify_helper(t[0], `You can do these zwave things`, zwave_messages)
-  if (message === zwave_messages.zwave_secureadd.toLowerCase()) zwave_helper("zwave_f2e55e6c", { secureAddNode: random_number() })
-  if (message === zwave_messages.zwave_add.toLowerCase()) zwave_helper("zwave_f2e55e6c", { addNode: random_number() })
-  if (message === zwave_messages.zwave_cancel.toLowerCase()) zwave_helper("zwave_f2e55e6c", { cancelControllerCommand: random_number() })
-  if (message === zwave_messages.zwave_remove.toLowerCase()) zwave_helper("zwave_f2e55e6c", { removeNode: random_number() })
-  if (message === zwave_messages.zwave_heal.toLowerCase()) zwave_helper("zwave_f2e55e6c", { healNetwork: random_number() })
-  if (message === zwave_messages.zwave_reset.toLowerCase()) zwave_helper("zwave_f2e55e6c", { softReset: random_number() })
-
-  // lights
-  if (message === messages.lights.toLowerCase()) notify_helper(t[0], `You can do these light things`, light_messages)
-
-  if (message === light_messages.extractor_fan_light.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen RM"], { "sendData": "&\u0000\u0014\u0000\u0018\u0017\u0018\u00170-\u0018\u0017\u0018\u00170[\u0019\u0016\u0018\u0017H\u0000\r\u0005\u0000\u0000\u0000\u0000" })
-
 
   //all off
   if (message === messages.all_off.toLowerCase()) {

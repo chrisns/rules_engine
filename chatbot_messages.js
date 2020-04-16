@@ -6,11 +6,6 @@ module.exports.camera_map = {
   camera_external_garden: "Garden camera"
 }
 
-module.exports.light_messages = {
-  start: "/start",
-  extractor_fan_light: "Extractor fan light",
-}
-
 module.exports.velux_messages = {
   start: "/start",
   velux_blind_100: "Loft Blind open",
@@ -21,16 +16,6 @@ module.exports.velux_messages = {
   velux_window_25: "Loft Window 25% Open",
   velux_window_0: "Loft Window Closed",
   velux_window_vent: "Loft Window vent open",
-}
-
-module.exports.zwave_messages = {
-  start: "/start",
-  zwave_secureadd: "Securely add device",
-  zwave_add: "Insecurely add device",
-  zwave_cancel: "Cancel controller command",
-  zwave_remove: "Remove device",
-  zwave_heal: "Heal network",
-  zwave_reset: "Soft reset controller",
 }
 
 module.exports.messages = {
@@ -50,10 +35,9 @@ module.exports.messages = {
   all_off: "Bedtime everything off + arm home",
   lock_noisy: "Lock loud",
   lock_quiet: "Lock quiet",
-  lights: "Lights",
   velux_messages: "Velux",
-  zwave: "Z-wave management",
   vacuum_start: "Vacuum Start",
   vacuum_stop: "Vacuum Stop",
-  extractor_fan: "Extractor fan"
+  extractor_fan: "Extractor fan",
+  extractor_fan_light: "Extractor fan light",
 }
