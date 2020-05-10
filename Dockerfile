@@ -19,4 +19,5 @@ WORKDIR /app
 COPY . .
 ENV NODE_ENV=production
 USER node
+ENV TZ=Europe/London
 CMD node index.js
