@@ -76,12 +76,17 @@ Feature: Heating schedule
     When the time is between "3:30pm" and "5:30pm"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 35°C
+    And the "Family bathroom towel rail" user "Switch" should be on
 
   Scenario: Family bathroom nighttime
     Given a clock tic
     When the time is between "5:30pm" and "11pm"
-    And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 10°C
+
+  Scenario: Family bathroom towel rail
+    Given a clock tic
+    When the time is between "8:30pm" and "11pm"
+    And the "Family bathroom towel rail" user "Switch" should be off
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
     Given the "Hallway heating" is reporting config "Temperature sensor" not "F  - Floor mode"
