@@ -85,7 +85,7 @@ Feature: Heating schedule
 
   Scenario: Family bathroom towel rail
     Given a clock tic
-    When the time is between "8:30pm" and "11pm"
+    When the time is between "5:30pm" and "11pm"
     And the "Family bathroom towel rail" user "Switch" should be off
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
