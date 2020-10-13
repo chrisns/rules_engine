@@ -18,3 +18,7 @@ updates:
   - dependency-name: cucumber
     versions:
     - ">= 6.a, < 7"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
