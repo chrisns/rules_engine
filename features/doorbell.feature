@@ -25,4 +25,5 @@ Feature: Doorbell
 
   Scenario: Refresh the door look time
     Given cron "30 07 * * * *"
+    Then the "front door lock" system "Set Date/Time" should be true
     Then the "front door lock" system "Refresh Date/Time" should be true
