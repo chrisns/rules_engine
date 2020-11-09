@@ -51,13 +51,13 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite morning
     Given a clock tic
-    When the time is between "04:30am" and "7am"
+    When the time is between "05:30am" and "9:30am"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 35°C
 
   Scenario: Loft en-suite day
     Given a clock tic
-    When the time is between "8am" and "1pm"
+    When the time is between "9:30am" and "1pm"
     Then the underfloor "Loft en-suite heating" should be 14°C
 
   Scenario: Loft en-suite bedtime
