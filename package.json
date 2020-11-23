@@ -15,7 +15,7 @@
     "aws-mqtt-client": "0.0.5",
     "aws-sdk": "^2.797.0",
     "cron": "^1.8.2",
-    "cucumber": "^5.1.0",
+    "cucumber": "^6.0.5",
     "lodash": "^4.17.20",
     "memoizee": "^0.4.14",
     "mqtt-wildcard": "^3.0.9",
