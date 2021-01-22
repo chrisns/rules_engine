@@ -41,6 +41,7 @@ const awsTopics = [
   `$aws/things/${thing_lookup["Zwave usa controller"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Kitchen multisensor"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Downstairs toilet multisensor"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Family bathroom flood sensor"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Kitchen lights"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Lounge light switch"]}/shadow/update/documents`,
