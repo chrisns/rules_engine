@@ -6,6 +6,10 @@ Feature: Lighting
     And the "Kitchen lights" is reporting "user" - "Level" less than 25
     Then the "Kitchen lights" user "Level" should be "25"
 
+  Scenario: Someone walks in to the kitchen
+    Given there is movement is detected on the "Kitchen multisensor"
+    Then the "Kitchen counter lights" user "Switch-1" should be on
+
   Scenario: Remind Lounge lights to use bi stable switches
     Given the "Lounge lights" is reporting config "Inputs Button/Switch configuration" not "Bi-stable input (switch)"
     Then the "Lounge lights" config "Inputs Button/Switch configuration" should be "Bi-stable input (switch)"
@@ -30,3 +34,11 @@ Feature: Lighting
   Scenario: Unlocking garage turns lights on
     Given the "Garage door lock" is reporting user "Locked" not "true"
     Then the "Garage lights" user "Switch" should be on
+
+  Scenario: Movement in downstairs toilet
+    Given there is movement is detected on the "Downstairs toilet multisensor"
+    Then the "Downstairs toilet lighting" user "Level" should be "99"
+
+  Scenario: Movement in downstairs toilet clears
+    Given there is no movement detected on the "Downstairs toilet multisensor"
+    Then the "Downstairs toilet lighting" user "Level" should be "0"
