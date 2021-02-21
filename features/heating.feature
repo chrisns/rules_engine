@@ -49,26 +49,33 @@ Feature: Heating schedule
     And the alarm readiness is "ready"
     Then the nest thermostat mode is set to "heat"
 
-  Scenario: Loft en-suite morning
-    Given a clock tic
-    When the time is between "05:30am" and "9:30am"
+  Scenario: Loft en-suite morning week
+    Given cron "* 5-8 * * 1-5"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 35°C
 
-  Scenario: Loft en-suite day
-    Given a clock tic
+  Scenario: Loft en-suite morning weekend
+    Given cron "* 8-10 * * 6,0"
+    And the alarm is not "Away"
+    Then the underfloor "Loft en-suite heating" should be 35°C
+
+  Scenario: Loft en-suite day week
+    Given cron "* 10-13 * * 1-5"
     When the time is between "9:30am" and "1pm"
-    Then the underfloor "Loft en-suite heating" should be 14°C
+    Then the underfloor "Loft en-suite heating" should be 10°C
+
+  Scenario: Loft en-suite day weekend
+    Given cron "* 11-13 * * 6,0"
+    When the time is between "9:30am" and "1pm"
+    Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Loft en-suite bedtime
-    Given a clock tic
-    When the time is between "7:45pm" and "9:30pm"
+    Given cron "* 20-21 * * *"
     And the alarm is not "Away"
     Then the underfloor "Loft en-suite heating" should be 30°C
 
   Scenario: Loft en-suite after bedtime
-    Given a clock tic
-    When the time is between "9:30pm" and "11:30pm"
+    Given cron "* 22-23 * * *"
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths
