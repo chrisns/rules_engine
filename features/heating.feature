@@ -1,17 +1,15 @@
 Feature: Heating schedule
 
   Scenario: Daytime setpoint
-    Given a clock tic
-    When the time is between "5am" and "4pm"
+    Given cron "* 5-15 * * *"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 20°C
-    And the underfloor "Kitchen heating" should be 26°C
+    And the underfloor "Kitchen heating" should be 24°C
     And the underfloor "Dining Room heating" should be 24°C
 
   Scenario: Evening setpoint
-    Given a clock tic
-    When the time is between "4pm" and "8pm"
+    Given cron "* 16-19 * * *"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 23°C
@@ -19,8 +17,7 @@ Feature: Heating schedule
     And the underfloor "Dining Room heating" should be 26°C
 
   Scenario: Nighttime setpoint
-    Given a clock tic
-    When the time is between "8pm" and "11:59pm"
+    Given cron "* 20-23 * * *"
     And the alarm is not "Away"
     And the alarm readiness is "ready"
     Then the underfloor "Hallway heating" should be 15°C
@@ -61,12 +58,10 @@ Feature: Heating schedule
 
   Scenario: Loft en-suite day week
     Given cron "* 10-13 * * 1-5"
-    When the time is between "9:30am" and "1pm"
     Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Loft en-suite day weekend
     Given cron "* 11-13 * * 6,0"
-    When the time is between "9:30am" and "1pm"
     Then the underfloor "Loft en-suite heating" should be 10°C
 
   Scenario: Loft en-suite bedtime
@@ -79,20 +74,14 @@ Feature: Heating schedule
     Then the underfloor "Loft en-suite heating" should be 16°C
 
   Scenario: Family bathroom evening baths
-    Given a clock tic
-    When the time is between "3:30pm" and "5:30pm"
+    Given cron "* 15-17 * * *"
     And the alarm is not "Away"
     Then the underfloor "Family bathroom heating" should be 35°C
     And the "Family bathroom towel rail" user "Switch" should be on
 
   Scenario: Family bathroom nighttime
-    Given a clock tic
-    When the time is between "5:30pm" and "11pm"
+    Given cron "* 18-23 * * *"
     Then the underfloor "Family bathroom heating" should be 10°C
-
-  Scenario: Family bathroom towel rail
-    Given a clock tic
-    When the time is between "5:30pm" and "11pm"
     And the "Family bathroom towel rail" user "Switch" should be off
 
   Scenario: Remind Hallway underfloor heating to use floor sensors
