@@ -16,7 +16,7 @@
     "aws-sdk": "^2.847.0",
     "cron": "^1.8.2",
     "cucumber": "^5.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "memoizee": "^0.4.15",
     "mqtt-wildcard": "^3.0.9",
     "request": "^2.88.2",
