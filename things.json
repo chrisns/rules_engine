@@ -42,5 +42,7 @@
   "Kitchen RM": "broadlink_37279800a8c0",
   "Loft Window": "velux_5636132610170186",
   "Loft Blind": "velux_53294a261208027b",
-  "Downstairs toilet multisensor": "zwave_f2e55e6c_73"
+  "Downstairs toilet multisensor": "zwave_f2e55e6c_73",
+  "Garage Flood Sensor": "zwave_f2e55e6c_78",
+  "Kitchen Flood Sensor": "zwave_f2e55e6c_79"
 }
