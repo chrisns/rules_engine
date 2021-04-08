@@ -59,3 +59,7 @@ Feature: Alarm status changes
     And the alarm is "Disarm"
     Then a message reading "I armed the alarm home because it looks like you forgot to" is sent to "everyone"
     And the alarm state should be "Arm_Home"
+
+  Scenario: Driveway motion sensor take pictures
+    Given the "Driveway Floodlight" is reporting user "Home Security" not "Clear"
+    And a screengrab of the "Driveway camera" is sent to "chris"
