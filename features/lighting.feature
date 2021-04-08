@@ -37,6 +37,7 @@ Feature: Lighting
 
   Scenario: Movement in downstairs toilet
     Given there is movement is detected on the "Downstairs toilet multisensor"
+    And a delay of 1 second
     Then the "Downstairs toilet lighting" user "Level" should be "99"
 
   Scenario: Movement in downstairs toilet clears
