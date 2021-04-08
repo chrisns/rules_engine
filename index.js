@@ -182,12 +182,8 @@ const all_off = () => {
   zwave_helper(thing_lookup["Landing lights"], { user: { Switch: false } })
   zwave_helper(thing_lookup["Bathroom leds"], { "on": false })
 
-  // zwave_helper(thing_lookup["Zwave eu controller"], { switchAllOff: random_number() })
-  // zwave_helper(thing_lookup["Zwave usa controller"], { switchAllOff: random_number() })
   awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
 }
-
-const random_number = () => Math.floor((Math.random() * 100000) + 1)
 
 const song_play_helper = (song_uri, room, volume = 10) =>
   awsMqttClient.publish("sonos/preset/", JSON.stringify([encodeURI(JSON.stringify({
