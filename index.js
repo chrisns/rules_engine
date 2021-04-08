@@ -52,6 +52,7 @@ const awsTopics = [
   `$aws/things/${thing_lookup["Rack cupboard door"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Garage Flood Sensor"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Kitchen Flood Sensor"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Loft space hatch"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Driveway Floodlight"]}/shadow/update/documents`,
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
