@@ -410,7 +410,7 @@ rulesAdd("there is movement is detected on the {string}", (device, event) =>
 
 rulesAdd("there is no movement detected on the {string}", (device, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user.Sensor === false &&
+  event.message.current.state.reported.user.Sensor !== true &&
   event.message.current.state.reported.user.Sensor !== event.message.previous.state.reported.user.Sensor)
 
 rulesAdd("the {string} speaker should {word}", (room, action) => awsMqttClient.publish(`sonos/${action.toLowerCase()}/${room}`, JSON.stringify({}), { qos: 0 }))
