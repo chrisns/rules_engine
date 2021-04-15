@@ -35,10 +35,6 @@ Feature: Lighting
     Given the "Garage door lock" is reporting user "Locked" not "true"
     Then the "Garage lights" user "Switch" should be on
 
-  Scenario: Movement in downstairs toilet
-    Given there is movement is detected on the "Downstairs toilet multisensor"
-    Then the "Downstairs toilet lighting" user "Level" should be "99"
-
   Scenario: Movement in downstairs toilet clears
     Given there is no movement detected on the "Downstairs toilet multisensor"
     Then the "Downstairs toilet lighting" user "Level" should be "0"
