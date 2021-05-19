@@ -134,9 +134,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.vacuum_stop.toLowerCase())
     vacuum_helper('stop')
 
-  if (message === messages.extractor_fan.toLowerCase())
-    zwave_helper(thing_lookup["Kitchen RM"], { "sendData": "&\u0000\u0014\u0000\u0018\u0016\u0019-1\u0016\u0018\u0017\u0018-1D\u0019-\u0018\u00170\u0000\r\u0005\u0000\u0000\u0000\u0000" })
-
   // velux
   if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
   if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 1 })
@@ -147,44 +144,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === velux_messages.velux_window_100.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 1 })
   if (message === velux_messages.velux_window_vent.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 93 })
 
-  //all off
-  if (message === messages.all_off.toLowerCase()) {
-    all_off()
-    reply_with_alarm_status(t[0])
-    set_alarm_state("arm_home")
-    notify_helper(t[0], "night night")
-    zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: true } })
-  }
 })
-
-const all_off = () => {
-  zwave_helper(thing_lookup["Lounge lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Lounge lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Family bathroom lights"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Entry lighting"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Entry lighting"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Loft lighting"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Downstairs toilet lighting"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Noah lighting"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Kitchen lights"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Fairy garden lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Garage lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Garage lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Kitchen counter lights"], { user: { "Switch-1": false } })
-  zwave_helper(thing_lookup["Freya room lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Small hallway lights"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Utility room lights"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Lounge side lights"], { user: { Level: 0 } })
-  zwave_helper(thing_lookup["Loft bathroom"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Studio"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Loft landing"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Dining lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Landing lights"], { user: { Switch: false } })
-  zwave_helper(thing_lookup["Bathroom leds"], { "on": false })
-
-  awsMqttClient.publish("sonos/pauseall/now", JSON.stringify({}))
-}
 
 const song_play_helper = (song_uri, room, volume = 10) =>
   awsMqttClient.publish("sonos/preset/", JSON.stringify([encodeURI(JSON.stringify({

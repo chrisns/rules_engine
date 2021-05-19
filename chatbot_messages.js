@@ -32,12 +32,9 @@ module.exports.messages = {
   cam_porch: "Get porch camera",
   cam_front: "Get front camera",
   cam_back: "Get back camera",
-  all_off: "Bedtime everything off + arm home",
   lock_noisy: "Lock loud",
   lock_quiet: "Lock quiet",
   velux_messages: "Velux",
   vacuum_start: "Vacuum Start",
   vacuum_stop: "Vacuum Stop",
-  extractor_fan: "Extractor fan",
-  extractor_fan_light: "Extractor fan light",
 }
