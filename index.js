@@ -54,6 +54,7 @@ const awsTopics = [
   `$aws/things/${thing_lookup["Kitchen Flood Sensor"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Loft space hatch"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Driveway Floodlight"]}/shadow/update/documents`,
+  `$aws/things/${thing_lookup["Nodeon remote"]}/shadow/update/documents`,
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
 ]
@@ -209,7 +210,7 @@ const notify_helper = (who, message, actions = null, disableNotification = false
     }) : null
   }))
 
-const say_helper = (where, what) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, getSayVolume()]), { qos: 0 })
+const say_helper = (where, what, volume) => awsMqttClient.publish(`sonos/say/${where}`, JSON.stringify([what, volume ? volume : getSayVolume()]), { qos: 0 })
 
 const getSayVolume = () => _.inRange(new Date().getHours(), 6, 18) ? 80 : 40
 
@@ -243,6 +244,7 @@ rulesAdd("the alarm readiness is {string}", async state => await get_alarm_ready
 rulesAdd("the alarm is {string}", async state => await get_alarm_state() === state)
 
 rulesAdd("the {string} speaker says {string}", (speaker, message) => say_helper(speaker, message))
+rulesAdd("the {string} speaker whispers {string}", (speaker, message) => say_helper(speaker, message, 20))
 
 rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) =>
   send_camera_to(Object.keys(camera_map).find(key => camera_map[key] === camera), TL_MAP[who.toLowerCase()]))

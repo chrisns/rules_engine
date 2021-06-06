@@ -46,3 +46,8 @@ Feature: Lighting
   Scenario: Loft hatch opens
     Given the "Loft space hatch" is reporting user "Home Security" "Clear"
     Then the "Loft space light" user "Switch" should be off
+
+  Scenario: noah button push
+    Given the "Nodeon remote" is reporting user "Scene 2" "Pressed 1 Time"
+    Then the "Kitchen" speaker says "Noah paging"
+    Then the "Loft" speaker whispers "Noah paging"
