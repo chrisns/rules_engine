@@ -1,4 +1,4 @@
-FROM node:16.3.0-alpine as build
+FROM node:16.8.0-alpine as build
 LABEL org.opencontainers.image.source https://github.com/chrisns/rules_engine
 
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN npm test
 RUN npm prune --production
 RUN rm -r test package-lock.json .eslintrc.js
 
-FROM node:16.3.0-alpine
+FROM node:16.8.0-alpine
 RUN apk --no-cache add openssl wget
 
 COPY --from=build /app /app
