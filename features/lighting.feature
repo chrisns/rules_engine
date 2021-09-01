@@ -26,15 +26,6 @@ Feature: Lighting
     When the "Family bathroom lights" button 26 is pushed
     Then the "Bathroom leds" led strip should be toggled
 
-  # Garage lights controlled by lock
-  Scenario: Locking garage turns lights off
-    Given the "Garage door lock" is reporting user "Locked" "true"
-    Then the "Garage lights" user "Switch" should be off
-
-  Scenario: Unlocking garage turns lights on
-    Given the "Garage door lock" is reporting user "Locked" not "true"
-    Then the "Garage lights" user "Switch" should be on
-
   Scenario: Movement in downstairs toilet clears
     Given there is no movement detected on the "Downstairs toilet multisensor"
     Then the "Downstairs toilet lighting" user "Level" should be "0"
