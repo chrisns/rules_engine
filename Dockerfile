@@ -4,7 +4,6 @@ LABEL org.opencontainers.image.source https://github.com/chrisns/rules_engine
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install -s
-RUN npm audit fix
 COPY test test
 COPY rules.js .
 COPY .eslintrc.js .
