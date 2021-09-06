@@ -40,8 +40,6 @@
   "Zwave usa controller": "zwave_eb2bd207",
   "Zwave eu controller": "zwave_f2e55e6c",
   "Kitchen RM": "broadlink_37279800a8c0",
-  "Loft Window": "velux_5636132610170186",
-  "Loft Blind": "velux_53294a261208027b",
   "Driveway Floodlight": "zwave_f2e55e6c_67",
   "Downstairs toilet multisensor": "zwave_f2e55e6c_73",
   "Garage Flood Sensor": "zwave_f2e55e6c_78",

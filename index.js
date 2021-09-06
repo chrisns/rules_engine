@@ -11,7 +11,7 @@ const CronJob = require('cron').CronJob;
 
 
 const { AWS_IOT_ENDPOINT_HOST, CHRIS_TELEGRAM_ID, HANNAH_TELEGRAM_ID, GROUP_TELEGRAM_ID } = process.env
-const { camera_map, velux_messages, messages } = require("./chatbot_messages")
+const { camera_map, messages } = require("./chatbot_messages")
 
 const { rulesAdd, eventHandler, pickleGherkin } = require("./rules")
 const fs = require("fs")
@@ -89,10 +89,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   if (message === messages.unlock_door.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { user: { Locked: false } })
 
-  if (message === messages.unlock_garage.toLowerCase()) zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: false } })
-
-  if (message === messages.lock_garage.toLowerCase()) zwave_helper(thing_lookup["Garage door lock"], { user: { Locked: true } })
-
   if (message === messages.lock_quiet.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { config: { "Audio Mode": "Silent" } })
   if (message === messages.lock_noisy.toLowerCase()) zwave_helper(thing_lookup["front door lock"], { config: { "Audio Mode": "High" } })
 
@@ -118,6 +114,7 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.cam_back.toLowerCase()) send_camera_to("camera_external_back", t[0])
 
   if (message === messages.cam_front.toLowerCase()) send_camera_to("camera_external_front", t[0])
+  if (message === messages.cam_down.toLowerCase()) send_camera_to("camera_external_down", t[0])
 
   if (message === messages.cam_driveway.toLowerCase()) send_camera_to("camera_external_driveway", t[0])
 
@@ -128,22 +125,6 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
   if (message === messages.get_alarm_status.toLowerCase())
     get_alarm_state()
       .then(state => notify_helper(t[0], state))
-
-  // vacuum
-  if (message === messages.vacuum_start.toLowerCase())
-    vacuum_helper('start')
-  if (message === messages.vacuum_stop.toLowerCase())
-    vacuum_helper('stop')
-
-  // velux
-  if (message === messages.velux_messages.toLowerCase()) notify_helper(t[0], `You can do these velux things`, velux_messages)
-  if (message === velux_messages.velux_blind_100.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 1 })
-  if (message === velux_messages.velux_blind_0.toLowerCase()) zwave_helper(thing_lookup["Loft Blind"], { set_to: 100 })
-  if (message === velux_messages.velux_window_25.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 75 })
-  if (message === velux_messages.velux_window_50.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 50 })
-  if (message === velux_messages.velux_window_75.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 25 })
-  if (message === velux_messages.velux_window_100.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 1 })
-  if (message === velux_messages.velux_window_vent.toLowerCase()) zwave_helper(thing_lookup["Loft Window"], { set_to: 93 })
 
 })
 
@@ -191,8 +172,6 @@ const message_parser = message => {
     return message.toString()
   }
 }
-
-const vacuum_helper = action => awsMqttClient.publish(`ifttt-out/vacuum_${action}`, JSON.stringify({}), { qos: 0 })
 
 const zwave_helper = (thing, state) => iotdata.updateThingShadow({
   thingName: thing,
@@ -378,8 +357,6 @@ rulesAdd("the {string} speaker should {word}", (room, action) => awsMqttClient.p
 rulesAdd("the {string} speaker should play {string} at {int}%", (room, song_uri, volume) => song_play_helper(song_uri, room, volume))
 rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
 
-rulesAdd("the vacuum should {word}", vacuum_helper)
-
 rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
 
 rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { "Heating 1": temp } }))
@@ -397,17 +374,11 @@ rulesAdd("a {string} backoff of {int} {word}", (backoffname, time, measure) => {
   return true
 })
 
-rulesAdd("turn everything off", () => all_off())
-
 rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
-
-rulesAdd("the event is forwarded to {string}", (who, event) => notify_helper(TL_MAP[who.toLowerCase()], `zwave ${event.message.homeid} ${JSON.stringify(event.message.log)}`))
 
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
-
-rulesAdd("the velux {string} is set to {int}%", (device, val) => zwave_helper(thing_lookup[device], { set_to: val }))
 
 rulesAdd("the nest thermostat mode is set to {string}", mode => awsMqttClient.publish(`$aws/things/nest_09AA01AC28170R93/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
 
