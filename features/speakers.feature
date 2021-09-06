@@ -1,13 +1,5 @@
 Feature: Lounge speaker volume
 
-  Scenario: Daytime TV speaker
-    Given cron "* 6-17 * * *"
-    Then the "Lounge" speaker nightmode should be off
-
-  Scenario: Nighttime TV speaker
-    Given cron "* 18-23 * * *"
-    Then the "Lounge" speaker nightmode should be on
-
 Feature: Bathroom speaker
   Scenario: Button is pushed on bathroom light switch twice play the toothbrush song
     When the "Family bathroom lights" button 24 is pushed
