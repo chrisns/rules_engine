@@ -22,8 +22,3 @@ Feature: Doorbell
   Scenario: Someone rings the doorbell magicmirror notify
     Given the doorbell is pressed
     Then the magicmirror event "doorbell" is broadcast
-
-  Scenario: Refresh the door look time
-    Given cron "30 07 * * * *"
-    Then the "front door lock" system "Set Date/Time" should be true
-    Then the "front door lock" system "Refresh Date/Time" should be true
