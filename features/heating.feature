@@ -38,10 +38,4 @@ Feature: Heating schedule
     And the underfloor "Dining Room heating" should be 10°C
     And the underfloor "Loft en-suite heating" should be 10°C
     And the underfloor "Family bathroom heating" should be 10°C
-    And the nest thermostat mode is set to "off"
 
-  Scenario: Normal Nest mode setting
-    Given a clock tic
-    And the alarm is not "Away"
-    And the alarm readiness is "ready"
-    Then the nest thermostat mode is set to "heat"
