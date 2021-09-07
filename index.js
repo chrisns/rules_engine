@@ -380,8 +380,6 @@ rulesAdd("a message reading {string} is sent to {string} with a button to {strin
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
 
-rulesAdd("the nest thermostat mode is set to {string}", mode => awsMqttClient.publish(`$aws/things/nest_09AA01AC28170R93/shadow/update`, JSON.stringify({ state: { desired: { hvac_mode: mode } } }), { qos: 0 }))
-
 rulesAdd("the magicmirror event {string} is broadcast", ev => awsMqttClient.publish(`magicmirror/event`, ev, { qos: 1 }))
 
 rulesAdd("the {word} door is unlocked", (event, door) => iotdata.updateThingShadow({

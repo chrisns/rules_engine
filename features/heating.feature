@@ -29,7 +29,6 @@ Feature: Heating schedule
     Then the underfloor "Hallway heating" should be 10°C
     And the underfloor "Kitchen heating" should be 10°C
     And the underfloor "Dining Room heating" should be 10°C
-    And the nest thermostat mode is set to "off"
 
   Scenario: Away eco-mode
     Given the alarm state changes to "Away"
