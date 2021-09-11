@@ -10,7 +10,3 @@ Feature: Doorbell
     And a "doorbell" backoff of 5 seconds
     Then the "Loft" speaker says "someone at the door"
     Then the "Kitchen" speaker says "someone at the door"
-
-  Scenario: Someone rings the doorbell magicmirror notify
-    Given the doorbell is pressed
-    Then the magicmirror event "doorbell" is broadcast
