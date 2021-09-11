@@ -38,22 +38,8 @@ const awsTopics = [
   "owntracks/+/+/event",
   "$aws/things/alarm_status/shadow/update/documents",
   `$aws/things/${thing_lookup["Zwave eu controller"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Zwave usa controller"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["doorbell"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Kitchen multisensor"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Downstairs toilet multisensor"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Family bathroom flood sensor"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Kitchen lights"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Lounge light switch"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Family bathroom lights"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Garage door lock"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Garage lights"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Noah lighting"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Rack cupboard door"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Garage Flood Sensor"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Kitchen Flood Sensor"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Loft space hatch"]}/shadow/update/documents`,
-  `$aws/things/${thing_lookup["Driveway Floodlight"]}/shadow/update/documents`,
   `$aws/things/${thing_lookup["Nodeon remote"]}/shadow/update/documents`,
   `notify/out/${CHRIS_TELEGRAM_ID}`,
   `notify/out/${HANNAH_TELEGRAM_ID}`
@@ -111,35 +97,11 @@ awsMqttClient.on("message", (topic, raw_message, raw_msg, t = mqttWildcard(topic
 
   if (message === messages.start.toLowerCase()) notify_helper(t[0], `You can do these things`, messages)
 
-  if (message === messages.cam_back.toLowerCase()) send_camera_to("camera_external_back", t[0])
-
-  if (message === messages.cam_front.toLowerCase()) send_camera_to("camera_external_front", t[0])
-  if (message === messages.cam_down.toLowerCase()) send_camera_to("camera_external_down", t[0])
-
-  if (message === messages.cam_driveway.toLowerCase()) send_camera_to("camera_external_driveway", t[0])
-
-  if (message === messages.cam_garden.toLowerCase()) send_camera_to("camera_external_garden", t[0])
-
-  if (message === messages.cam_porch.toLowerCase()) send_camera_to("camera_external_porch", t[0])
-
   if (message === messages.get_alarm_status.toLowerCase())
     get_alarm_state()
       .then(state => notify_helper(t[0], state))
 
 })
-
-const song_play_helper = (song_uri, room, volume = 10) =>
-  awsMqttClient.publish("sonos/preset/", JSON.stringify([encodeURI(JSON.stringify({
-    "players": [
-      {
-        "roomName": room,
-        "volume": volume
-      }
-    ],
-    "uri": song_uri,
-    "pauseOthers": false
-  }))]))
-
 
 const send_camera_to = (camera, who, inst_uuid = uuid(), imageBody = {}) =>
   iotdata.getThingShadow({ thingName: camera }).promise()
@@ -204,41 +166,11 @@ rulesAdd("the doorbell is pressed", (event) =>
   event.message.previous.state.reported.user["Home Security"] === "Clear"
 )
 
-rulesAdd("the zwave controller {string} changes to {word}", (controller, readiness, event) =>
-  event.topic === `$aws/things/${thing_lookup[controller]}/shadow/update/documents` &&
-  event.message.current.state.reported.ready === (readiness === "ready") &&
-  event.message.current.state.reported.ready !== event.message.previous.state.reported.ready
-)
-
-rulesAdd("the alarm state changes to {string}", (state, event) =>
-  event.topic === "$aws/things/alarm_status/shadow/update/documents" &&
-  event.message.previous.state.reported.state !== event.message.current.state.reported.state &&
-  event.message.current.state.reported.state.toLowerCase() === state.toLowerCase()
-)
-
-rulesAdd("the alarm is not {string}", async state => await get_alarm_state() !== state)
-
-rulesAdd("the alarm readiness is {string}", async state => await get_alarm_ready_status() === (state.toLowerCase() === "ready"))
-
-rulesAdd("the alarm is {string}", async state => await get_alarm_state() === state)
-
 rulesAdd("the {string} speaker says {string}", (speaker, message) => say_helper(speaker, message))
 rulesAdd("the {string} speaker whispers {string}", (speaker, message) => say_helper(speaker, message, 20))
 
 rulesAdd("a screengrab of the {string} is sent to {string}", (camera, who) =>
   send_camera_to(Object.keys(camera_map).find(key => camera_map[key] === camera), TL_MAP[who.toLowerCase()]))
-
-rulesAdd("{word} leaves home", (device, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
-  t !== null &&
-  t[1].toLowerCase() === device.toLowerCase() &&
-  event.message.event.toLowerCase() === "leave" &&
-  event.message.desc.toLowerCase() === "home")
-
-rulesAdd("{word} arrives home", (device, event, t = mqttWildcard(event.topic, "owntracks/+/+/event")) =>
-  t !== null &&
-  t[1].toLowerCase() === device.toLowerCase() &&
-  event.message.event.toLowerCase() === "enter" &&
-  event.message.desc.toLowerCase() === "home")
 
 const calculate_time = (number, measure) => {
   switch (measure) {
@@ -269,19 +201,10 @@ rulesAdd("cron {string}", (cron_schedule, event) => {
   return event.topic === "cron" && event.message === cron_schedule
 })
 
-rulesAdd("the {string} z-wave network is ready", async (device) =>
-  await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
-    .then(thing => JSON.parse(thing.payload).state.reported.ready) === true
-)
 
 rulesAdd("the {string} is reporting {string} - {string} less than {int}", async (device, genre, label, value) =>
   await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
     .then(thing => parseFloat(JSON.parse(thing.payload).state.reported[genre.toLowerCase()][label])) < value
-)
-
-rulesAdd("the current time is {word} sun{word}", async (ba, sunstate, event) =>
-  await iotdata.getThingShadow({ thingName: 'weather_daily' }).promise()
-    .then(thing => new Date()[`is${_.upperFirst(ba)}`](JSON.parse(thing.payload).state.reported.data[0][`sun${sunstate}Time`] * 1000).raw)
 )
 
 rulesAdd("the {string} is reporting {word} {string} not {string}", async (device, genre, label, value, event) =>
@@ -294,28 +217,11 @@ rulesAdd("the {string} is reporting {word} {string} {string}", async (device, ge
   event.message.current.state.reported[genre.toLowerCase()][label].toString() === value.toString()
 )
 
-rulesAdd("the {string} {word} {string} changes", async (device, genre, label, event) =>
-  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported[genre.toLowerCase()][label].toString() !== event.message.previous.state.reported[genre.toLowerCase()][label].toString()
-)
-
 rulesAdd("the {string} button {int} is pushed", async (device, buttonid, event) =>
   event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
   event.message.current.state.reported.user["Scene"] == buttonid &&
   event.message.previous.state.reported.user["Scene"] === 0 &&
   event.message.current.metadata.reported.user["Scene"].timestamp !== event.message.previous.metadata.reported.user["Scene"].timestamp
-)
-
-rulesAdd("the alarm readiness changes to {string}", async (readiness, event) =>
-  event.topic === `$aws/things/alarm_status/shadow/update/documents` &&
-  event.message.previous.state.reported.ready_status !== event.message.current.state.reported.ready_status &&
-  event.message.current.state.reported.ready_status === (readiness === "ready")
-)
-
-rulesAdd("the {string} {string} is turned {word}", async (device, field, state, event) =>
-  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user[field] === (state === "on") &&
-  event.message.current.state.reported.user[field] !== event.message.previous.state.reported.user[field]
 )
 
 rulesAdd("the {string} led strip should be {word}", async (device, action) => {
@@ -328,43 +234,8 @@ rulesAdd("the {string} led strip should be {word}", async (device, action) => {
   return zwave_helper(thing_lookup[device], { "on": action })
 })
 
-rulesAdd("a clock tic", event => event.topic === "clock tic")
-
-rulesAdd("the {string} {word} {string} should be {string}", (device, genre, setting, value) => zwave_helper(thing_lookup[device], { [genre]: { [setting]: value } }))
-
-rulesAdd("the {string} {word} {string} should be {word}", async (device, genre, setting, action) => {
-  if (action.toLowerCase() === "toggled") {
-    action = await iotdata.getThingShadow({ thingName: thing_lookup[device] }).promise()
-      .then(current_shadow => !JSON.parse(current_shadow.payload).state.reported[genre][setting])
-  } else {
-    action = action.toLowerCase() === "on"
-  }
-  return zwave_helper(thing_lookup[device], { [genre]: { [setting]: action } })
-})
-
-rulesAdd("there is movement is detected on the {string}", (device, event) =>
-  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user.Sensor === true &&
-  event.message.current.state.reported.user.Sensor !== event.message.previous.state.reported.user.Sensor)
-
-rulesAdd("there is no movement detected on the {string}", (device, event) =>
-  event.topic === `$aws/things/${thing_lookup[device]}/shadow/update/documents` &&
-  event.message.current.state.reported.user.Sensor !== true &&
-  event.message.current.state.reported.user.Sensor !== event.message.previous.state.reported.user.Sensor)
 
 rulesAdd("the {string} speaker should {word}", (room, action) => awsMqttClient.publish(`sonos/${action.toLowerCase()}/${room}`, JSON.stringify({}), { qos: 0 }))
-
-rulesAdd("the {string} speaker should play {string} at {int}%", (room, song_uri, volume) => song_play_helper(song_uri, room, volume))
-rulesAdd("the {string} speaker {word} should be {word}", (room, setting, state) => awsMqttClient.publish(`sonos/${setting.toLowerCase()}/${room}`, JSON.stringify([state]), { qos: 0 }))
-
-rulesAdd("the time is between {string} and {string}", (start, end) => new Date().isBetween(start, end).raw)
-
-rulesAdd("the underfloor {string} should be {int}°C", (room, temp) => zwave_helper(thing_lookup[room], { user: { "Heating 1": temp } }))
-
-rulesAdd("a delay of {int} {word}", async (number, measure) =>
-  new Promise(resolve => setTimeout(resolve, calculate_time(number, measure.toLowerCase()))))
-
-rulesAdd("the alarm state should be {string}", state => set_alarm_state(state.toLowerCase()))
 
 var backoff = {}
 rulesAdd("a {string} backoff of {int} {word}", (backoffname, time, measure) => {
@@ -374,23 +245,12 @@ rulesAdd("a {string} backoff of {int} {word}", (backoffname, time, measure) => {
   return true
 })
 
-rulesAdd("a message reading {string} is sent to {string}", (message, who) => notify_helper(TL_MAP[who.toLowerCase()], message))
-
 rulesAdd("a message reading {string} is sent to {string} with a button to {string}", (message, who, button) =>
   notify_helper(TL_MAP[who.toLowerCase()], message, button.split(", "))
 )
 
-rulesAdd("the magicmirror event {string} is broadcast", ev => awsMqttClient.publish(`magicmirror/event`, ev, { qos: 1 }))
-
-rulesAdd("the {word} door is unlocked", (event, door) => iotdata.updateThingShadow({
-  thingName: thing_lookup["front door lock"],
-  payload: JSON.stringify({ state: { desired: { user: { Locked: 0 } } } })
-}).promise())
-
 awsMqttClient.on("message", (topic, message) =>
   eventHandler({ topic: topic, message: message_parser(message) }))
-
-// pickling needs to be done after adding all the rules
 
 console.log(gherkin)
 pickleGherkin(gherkin)
